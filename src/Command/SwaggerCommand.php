@@ -1,17 +1,26 @@
 <?php
 namespace Absolute\SilexApi\Command;
 
-use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Zend\Code\Generator\FileGenerator;
+use Zend\Code\Generator\ClassGenerator;
+use Zend\Code\Generator\MethodGenerator;
+use Zend\Code\Generator\ParameterGenerator;
+use Zend\Code\Generator\DocBlockGenerator;
+use Zend\Code\Generator\DocBlock\Tag\ParamTag;
+use Zend\Code\Generator\DocBlock\Tag\ReturnTag;
 
-class SwaggerCommand extends Command
+class SwaggerCommand extends AbstractCommand
 {
     /**
      * @inheritdoc
      */
     protected function configure()
     {
+        parent::configure();
+        
         $this
             ->setName('absolute:silexapi:generation:swagger')
             ->setDescription('Generate Swagger JSON file.');
@@ -22,6 +31,73 @@ class SwaggerCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->_generateSwaggerClass($input, $output);
+        $this->_generateSwaggerJson($input, $output);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
+    private function _generateSwaggerClass(InputInterface $input, OutputInterface $output)
+    {
+        // generate the class
+        $class = new ClassGenerator;
+        $class->setNamespaceName('Absolute\\SilexApi\\Generation\\Docs');
+        $class->setName('Swagger');
+        
+        // generate parse() method
+        $docBlock = new DocBlockGenerator;
+        $docBlock->setTags([
+            new ParamTag('replace', ['array']),
+            new ReturnTag(['string']),
+        ]);
+        $params = [
+            new ParameterGenerator('replace', 'array', []),
+        ];
+        $methodBody = <<<EOT
+\$dataPath = __DIR__ 
+    . DIRECTORY_SEPARATOR . '..'
+    . DIRECTORY_SEPARATOR . 'data'
+    . DIRECTORY_SEPARATOR;
+
+\$swaggerJson = file_get_contents(\$dataPath . 'swagger.json');
+\$swaggerJson = str_replace(
+    array_keys(\$replace),
+    array_values(\$replace),
+    \$swaggerJson
+);
+
+return \$swaggerJson;
+EOT;
+        $class->addMethod(
+            'parse',
+            $params,
+            MethodGenerator::FLAG_PUBLIC,
+            $methodBody,
+            $docBlock
+        );
+
+        // write the file
+        $generationDir = $this->_getGenerationDir($input);
+        $destination = $generationDir
+            . DIRECTORY_SEPARATOR . 'Docs'
+            . DIRECTORY_SEPARATOR;
+        @mkdir($destination, 0777, true);
+        $file = new FileGenerator;
+        $file->setFilename($destination . 'Swagger.php');
+        $file->setBody($class->generate());
+        $file->write();
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
+    private function _generateSwaggerJson(InputInterface $input, OutputInterface $output)
+    {
+        $apiData = $this->_getClientData($input);
+        
         $swagger = [
             'swagger' => '2.0',
             'info' => [
@@ -70,9 +146,6 @@ class SwaggerCommand extends Command
                 'url'         => '',
             ],
         ];
-
-        // retrieve the data to be injected
-        $apiData = require(DATA_DIR . 'api.php');
         
         // add paths
         foreach ($apiData['operations'] as $_operationId => $_operationData) {
@@ -140,8 +213,17 @@ class SwaggerCommand extends Command
             }
         }
 
-        $swaggerJson = json_encode($swagger, JSON_PRETTY_PRINT);
-        file_put_contents(GENERATION_DIR . 'swagger.json', $swaggerJson);
+        // write the file
+        $generationDir = $this->_getGenerationDir($input);
+        $destination = $generationDir
+            . DIRECTORY_SEPARATOR . 'data'
+            . DIRECTORY_SEPARATOR;
+        @mkdir($destination, 0777, true);
+        $file = new FileGenerator;
+        $file->setFilename($destination . 'swagger.json');
+        $file->setSourceContent(json_encode($swagger, JSON_PRETTY_PRINT));
+        $file->setSourceDirty(false);
+        $file->write();
     }
 
     /**

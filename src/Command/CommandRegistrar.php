@@ -13,10 +13,9 @@ class CommandRegistrar
         $skipFiles = [
             '.',
             '..',
+            'AbstractCommand.php',
             'CommandRegistrar.php',
         ];
-
-        
         
         $files = scandir(__DIR__);
         foreach ($files as $_filename) {

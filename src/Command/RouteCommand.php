@@ -1,18 +1,24 @@
 <?php
 namespace Absolute\SilexApi\Command;
 
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Zend\Code\Generator\FileGenerator;
+use Zend\Code\Generator\ClassGenerator;
+use Zend\Code\Generator\MethodGenerator;
+use Zend\Code\Generator\ParameterGenerator;
+use Zend\Code\Generator\DocBlockGenerator;
+use Zend\Code\Generator\DocBlock\Tag\ParamTag;
 
-class RouteCommand extends Command
+class RouteCommand extends AbstractCommand
 {
     /**
      * @inheritdoc
      */
     protected function configure()
     {
+        parent::configure();
+
         $this
             ->setName('absolute:silexapi:generation:routes')
             ->setDescription('Generate Silex Routes file.');
@@ -23,7 +29,64 @@ class RouteCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $apiData = require(DATA_DIR . 'api.php');
+        $this->_generateRouteClass($input, $output);
+        $this->_generateRoutesFile($input, $output);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
+    private function _generateRouteClass(InputInterface $input, OutputInterface $output)
+    {
+        // generate the class
+        $class = new ClassGenerator;
+        $class->setNamespaceName('Absolute\\SilexApi\\Generation\\Routes');
+        $class->setName('RouteRegistrar');
+        $class->addUse('Silex\Application');
+
+        // generate register() method
+        $docBlock = new DocBlockGenerator;
+        $docBlock->setTags([
+            new ParamTag('app', 'Application'),
+        ]);
+        $params = [
+            new ParameterGenerator('app', 'Silex\Application'),
+        ];
+        $methodBody = <<<EOT
+\$dataPath = __DIR__ 
+    . DIRECTORY_SEPARATOR . '..'
+    . DIRECTORY_SEPARATOR . 'data'
+    . DIRECTORY_SEPARATOR;
+
+require_once \$dataPath . 'routes.php';
+EOT;
+        $class->addMethod(
+            'register',
+            $params,
+            MethodGenerator::FLAG_PUBLIC,
+            $methodBody,
+            $docBlock
+        );
+
+        // write the file
+        $generationDir = $this->_getGenerationDir($input);
+        $destination = $generationDir
+            . DIRECTORY_SEPARATOR . 'Routes'
+            . DIRECTORY_SEPARATOR;
+        @mkdir($destination, 0777, true);
+        $file = new FileGenerator;
+        $file->setFilename($destination . 'RouteRegistrar.php');
+        $file->setBody($class->generate());
+        $file->write();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    private function _generateRoutesFile(InputInterface $input, OutputInterface $output)
+    {
+        $apiData = $this->_getClientData($input);
 
         $openingTag = <<<EOT
 <?php
@@ -32,10 +95,14 @@ EOT;
         
         $useClasses = [
             'Silex\Application',
-            'Symfony\Component\HttpFoundation\Request as HttpRequest',
+            'Symfony\Component\HttpFoundation\Request',
             'Absolute\SilexApi\Request\RequestFactory',
             'Absolute\SilexApi\Response\ResponseFactory',
             'Absolute\SilexApi\Exception\NotImplementedException',
+            
+            'Absolute\SilexApi\Generation\Resource as ResourceInterface',
+            'Absolute\SilexApi\Generation\Model',
+            $this->_getClientNamespace($input) . 'Resource',
         ];
         
         $body = '';
@@ -44,10 +111,10 @@ EOT;
             
             $body .= <<<EOT
 // {$_operationData['name']} :: {$_operationData['description']}
-\$app->patch('{$_operationData['path']}', function (HttpRequest \$httpRequest{$_paramString})
+\$app->{$_operationData['method']}('{$_operationData['path']}', function (Request \$request{$_paramString})
 {
-    \$resource = new \\Acme\\WebService\\Resource\\{$_operationId};
-    if (!\$resource instanceof \\Acme\\WebService\\Generation\\Resource\\{$_operationId}Interface) {
+    \$resource = new Resource\\{$_operationId};
+    if (!\$resource instanceof ResourceInterface\\{$_operationId}Interface) {
         throw new NotImplementedException;
     }
     
@@ -67,21 +134,26 @@ EOT;
 
             $body .= <<<EOT
 
-    return ResponseFactory::prepareResponse(\$httpRequest, \$resource->execute());
+    return ResponseFactory::prepareResponse(\$request, \$resource->execute());
 });
 
 
 EOT;
         }
 
-        $generator = new FileGenerator;
-        $generator->setUses($useClasses);
-        $generator->setBody($body);
-        $generator->setSourceDirty(true);
-        $content = $generator->generate();
-        
-        $content = str_replace("<?php", $openingTag, $content);
-        file_put_contents(GENERATION_DIR . 'routes.php', $content);
+        // write the file
+        $generationDir = $this->_getGenerationDir($input);
+        $destination = $generationDir
+            . DIRECTORY_SEPARATOR . 'data'
+            . DIRECTORY_SEPARATOR;
+        @mkdir($destination, 0777, true);
+        $file = new FileGenerator;
+        $file->setFilename($destination . 'routes.php');
+        $file->setUses($useClasses);
+        $file->setBody($body);
+        $file->setSourceContent(str_replace("<?php", $openingTag, $file->generate()));
+        $file->setSourceDirty(false);
+        $file->write();
     }
 
     /**
@@ -138,7 +210,7 @@ EOT;
         $buildData = [];
         foreach ($params as $_paramId => $_paramData) {
             $_ucFirst = ucfirst($_paramId);
-            $buildData[] = "    \$resource->set{$_ucFirst}(RequestFactory::getQuery(\$httpRequest, '{$_paramData['field']}'));";
+            $buildData[] = "    \$resource->set{$_ucFirst}(RequestFactory::getQuery(\$request, '{$_paramData['field']}'));";
         }
         
         $result = implode(PHP_EOL, $buildData);
@@ -159,9 +231,9 @@ EOT;
         $ucFirst = ucfirst($modelClass);
 
         $body = <<<EOT
-    /** @var \\Acme\\WebService\\Generation\\Model\\{$ucFirst}Model \${$modelClass} */
-    \${$modelClass} = new \\Acme\\WebService\\Generation\\Model\\{$ucFirst}Model;
-    RequestFactory::hydrateModel(\$httpRequest, \${$modelClass});
+    /** @var Model\\{$ucFirst}Model \${$modelClass} */
+    \${$modelClass} = new Model\\{$ucFirst}Model;
+    RequestFactory::hydrateModel(\$request, \${$modelClass});
     \$resource->set{$ucFirst}(\${$modelClass});
 EOT;
         return $body;

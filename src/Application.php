@@ -3,7 +3,7 @@ namespace Absolute\SilexApi;
 
 use Silex\Application as SilexApplication;
 use Symfony\Component\HttpFoundation\Response;
-use Absolute\SilexApi\Generation\Routes\RoutesRegistrar;
+use Absolute\SilexApi\Generation\Routes\RouteRegistrar;
 use Absolute\SilexApi\Generation\Docs\Swagger;
 
 class Application
@@ -67,7 +67,7 @@ class Application
         });
 
         // include auto-generated routes for the client
-        $routes = new RoutesRegistrar;
+        $routes = new RouteRegistrar;
         $routes->register($this->app);
 
         // send headers

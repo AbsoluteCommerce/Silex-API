@@ -6,9 +6,7 @@
         "silex/silex": "^2.0.4",
         "symfony/security": "^3.1.10",
         "symfony/monolog-bridge": "^3.1.10",
-        "symfony/console": "^3.2.2"
-    },
-    "require-dev": {
+        "symfony/console": "^3.2.2",
         "zendframework/zend-code": "^3.1.0"
     },
     "autoload": {

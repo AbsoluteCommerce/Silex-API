@@ -2,19 +2,29 @@
 namespace Absolute\SilexApi\Response\Adapter;
 
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
-use Absolute\SilexApi\Model\ModelInterface;
 
-class JsonAdapter
+class JsonAdapter implements AdapterInterface
 {
     const ACCEPT = 'application/json';
 
     /**
-     * @param HttpRequest $request
-     * @param ModelInterface $model
-     * @return ModelInterface
+     * @inheritdoc
      */
-    public static function prepareResponse(HttpRequest $request, ModelInterface $model)
+    public function prepareResponse(HttpRequest $request, $model)
     {
-        return $model;
+        if ($model === null) {
+            return '';
+        } elseif (is_array($model)) {
+            $responseData = [];
+            foreach ($model as $_model) {
+                $responseData[] = $_model->getData();
+            }
+        } else {
+            $responseData = $model->getData();
+        }
+
+        $responseData = json_encode($responseData, JSON_PRETTY_PRINT);
+        
+        return $responseData;
     }
 }

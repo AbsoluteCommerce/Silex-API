@@ -2,19 +2,16 @@
 namespace Absolute\SilexApi\Response\Adapter;
 
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
-use Absolute\SilexApi\Model\ModelInterface;
 
-class JsonApiAdapter
+class JsonApiAdapter implements AdapterInterface
 {
     const ACCEPT = 'application/vnd.api+json';
 
     /**
-     * @param HttpRequest $request
-     * @param ModelInterface $model
-     * @return ModelInterface
+     * @inheritdoc
      */
-    public static function prepareResponse(HttpRequest $request, ModelInterface $model)
+    public function prepareResponse(HttpRequest $request, $model)
     {
-        return $model;
+        throw new \Exception('Not yet implemented...');
     }
 }

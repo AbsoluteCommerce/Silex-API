@@ -4,17 +4,29 @@ namespace Absolute\SilexApi\Request\Adapter;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Absolute\SilexApi\Model\ModelInterface;
 
-class JsonAdapter
+class JsonAdapter implements AdapterInterface
 {
     const ACCEPT = 'application/json';
 
     /**
-     * @param HttpRequest $request
-     * @param ModelInterface $model
-     * @return ModelInterface
+     * @inheritdoc
      */
-    public static function hydrateModel(HttpRequest $request, ModelInterface $model)
+    public function getQuery(HttpRequest $request, string $field)
     {
-        return $model;
+        return $field;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hydrateModel(HttpRequest $request, ModelInterface $model)
+    {
+        $data = json_decode($request->getContent());
+        
+        if (!is_array($data)) {
+            $data = [];
+        }
+        
+        $model->setData($data);
     }
 }

@@ -33,6 +33,35 @@ class ModelGenerator extends GeneratorAbstract
             $class->addUse('Absolute\SilexApi\Model\ModelAbstract');
             $class->setExtendedClass('Absolute\SilexApi\Model\ModelAbstract');
             
+            // generate protected property with getters and setters
+            $_getters = [];
+            $_setters = [];
+            $properties = array_key_exists('properties', $_modelData)
+                ? $_modelData['properties']
+                : [];
+            foreach ($properties as $_propertyId => $_propertyData) {
+                $_getters[$_propertyId] = 'get' . ucfirst($_propertyId);
+                $_setters[$_propertyId] = 'set' . ucfirst($_propertyId);
+            }
+            $_propertyGenerator = new PropertyGenerator;
+            $_propertyGenerator
+                ->setName('getters')
+                ->setDefaultValue($_getters)
+                ->setDocBlock(new DocBlockGenerator(null, null, [
+                    new ParamTag('getters', ['array']),
+                ]))
+                ->addFlag(PropertyGenerator::FLAG_PROTECTED);
+            $class->addPropertyFromGenerator($_propertyGenerator);
+            $_propertyGenerator = new PropertyGenerator;
+            $_propertyGenerator
+                ->setName('setters')
+                ->setDefaultValue($_setters)
+                ->setDocBlock(new DocBlockGenerator(null, null, [
+                    new ParamTag('setters', ['array']),
+                ]))
+                ->addFlag(PropertyGenerator::FLAG_PROTECTED);
+            $class->addPropertyFromGenerator($_propertyGenerator);
+            
             // generate property methods
             $properties = array_key_exists('properties', $_modelData)
                 ? $_modelData['properties']

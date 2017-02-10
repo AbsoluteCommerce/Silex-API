@@ -14,10 +14,10 @@ class ResponseFactory
 
     /**
      * @param HttpRequest $request
-     * @param ModelInterface $model
+     * @param ModelInterface|ModelInterface[] $model
      * @return ModelInterface
      */
-    public static function prepareResponse(HttpRequest $request, ModelInterface $model)
+    public static function prepareResponse(HttpRequest $request, $model)
     {
         return self::getAdapter($request)->prepareResponse($request, $model);
     }

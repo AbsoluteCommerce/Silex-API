@@ -30,7 +30,7 @@ class ResourceClassGenerator extends GeneratorAbstract
             // skip any implementations that already exist
             $resourceDir = $this->config->getResourceDir();
             if (@file_exists($resourceDir . $_className . '.php')) {
-                // continue; #todo remove comment
+                continue;
             }
             
             // generate the class
@@ -129,13 +129,21 @@ class ResourceClassGenerator extends GeneratorAbstract
                     '@inheritdoc'
                 );
             } else {
-                $_responseModel = ucfirst($_resourceData['response']) . 'Model';
+                $_responseModel = ucfirst($_resourceData['response']);
+                $_hasArray = strpos($_responseModel, '[]');
+                if ($_hasArray !== false) {
+                    $_responseModel = substr($_responseModel, 0, $_hasArray) . 'Model';
+                    $_body = "return [new {$_responseModel}];";
+                } else {
+                    $_responseModel .= 'Model';
+                    $_body = "return new {$_responseModel};";
+                }
                 $class->addUse("Absolute\\SilexApi\\Generation\\Models\\{$_responseModel}");
                 $class->addMethod(
                     'execute',
                     [],
                     MethodGenerator::FLAG_PUBLIC,
-                    "return new {$_responseModel};",
+                    $_body,
                     '@inheritdoc'
                 );
                 #todo configurable PHP7 return type hint

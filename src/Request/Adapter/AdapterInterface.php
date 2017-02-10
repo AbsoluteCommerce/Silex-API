@@ -8,8 +8,13 @@ interface AdapterInterface
 {
     /**
      * @param HttpRequest $request
-     * @param ModelInterface $model
-     * @return ModelInterface
+     * @param string $field
      */
-    public static function hydrateModel(HttpRequest $request, ModelInterface $model);
+    public function getQuery(HttpRequest $request, string $field);
+    
+    /**
+     * @param HttpRequest $request
+     * @param ModelInterface $model
+     */
+    public function hydrateModel(HttpRequest $request, ModelInterface $model);
 }

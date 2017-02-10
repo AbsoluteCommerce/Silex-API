@@ -54,12 +54,12 @@ class Application
      */
     public function api()
     {
-        #todo need to also handle FATAL to ensure it doesn't dump stack when DEBUG off
+        #todo need to also handle FATAL to ensure it doesn't dump stack when DEBUG off 
         
         // return 500 by default, to be proven otherwise in the application
         http_response_code(Response::HTTP_INTERNAL_SERVER_ERROR);
         $this->app->error(function (\Exception $e) {
-            $message = !$this->app['debug']
+            $message = $this->app['debug']
                 ? (string)$e
                 : Response::$statusTexts[Response::HTTP_INTERNAL_SERVER_ERROR];
             return new Response(
@@ -84,6 +84,8 @@ class Application
      */
     public function swagger()
     {
+        #todo might eventually move the swagger to its own repo and break down this module even more
+        
         $swagger = new Swagger;
         $swaggerJson = $swagger->parse([
             '{SCHEME}'   => $this->getConfig(self::CONFIG_SCHEME),

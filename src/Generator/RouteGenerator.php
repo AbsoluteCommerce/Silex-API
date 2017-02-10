@@ -1,8 +1,6 @@
 <?php
-namespace Absolute\SilexApi\Command;
+namespace Absolute\SilexApi\Generator;
 
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Zend\Code\Generator\FileGenerator;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\MethodGenerator;
@@ -10,34 +8,21 @@ use Zend\Code\Generator\ParameterGenerator;
 use Zend\Code\Generator\DocBlockGenerator;
 use Zend\Code\Generator\DocBlock\Tag\ParamTag;
 
-class RouteCommand extends AbstractCommand
+class RouteGenerator extends GeneratorAbstract
 {
     /**
      * @inheritdoc
      */
-    protected function configure()
+    public function generate()
     {
-        parent::configure();
-
-        $this
-            ->setName('absolute:silexapi:generation:routes')
-            ->setDescription('Generate Silex Routes file.');
+        $this->_generateRouteClass();
+        $this->_generateRoutesFile();
     }
 
     /**
-     * @inheritdoc
+     * 
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
-        $this->_generateRouteClass($input, $output);
-        $this->_generateRoutesFile($input, $output);
-    }
-
-    /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     */
-    private function _generateRouteClass(InputInterface $input, OutputInterface $output)
+    private function _generateRouteClass()
     {
         // generate the class
         $class = new ClassGenerator;
@@ -70,24 +55,18 @@ EOT;
         );
 
         // write the file
-        $generationDir = $this->_getGenerationDir($input);
-        $destination = $generationDir
-            . DIRECTORY_SEPARATOR . 'Routes'
-            . DIRECTORY_SEPARATOR;
-        @mkdir($destination, 0777, true);
         $file = new FileGenerator;
-        $file->setFilename($destination . 'RouteRegistrar.php');
+        $generationDir = $this->config->getGenerationDir('Routes');
+        $file->setFilename($generationDir . 'RouteRegistrar.php');
         $file->setBody($class->generate());
         $file->write();
     }
 
     /**
-     * @inheritdoc
+     * 
      */
-    private function _generateRoutesFile(InputInterface $input, OutputInterface $output)
+    private function _generateRoutesFile()
     {
-        $apiData = $this->_getClientData($input);
-
         $openingTag = <<<EOT
 <?php
 /** @var Application \$app */
@@ -102,11 +81,11 @@ EOT;
             
             'Absolute\SilexApi\Generation\Resource as ResourceInterface',
             'Absolute\SilexApi\Generation\Model',
-            $this->_getClientNamespace($input) . 'Resource',
+            $this->config->getNamespace('Resource'),
         ];
         
         $body = '';
-        foreach ($apiData['operations'] as $_operationId => $_operationData) {
+        foreach ($this->config->getResources() as $_operationId => $_operationData) {
             $_paramString = $this->_buildParamString($_operationData['params'] ?? []);
             
             $body .= <<<EOT
@@ -142,13 +121,9 @@ EOT;
         }
 
         // write the file
-        $generationDir = $this->_getGenerationDir($input);
-        $destination = $generationDir
-            . DIRECTORY_SEPARATOR . 'data'
-            . DIRECTORY_SEPARATOR;
-        @mkdir($destination, 0777, true);
         $file = new FileGenerator;
-        $file->setFilename($destination . 'routes.php');
+        $generationDir = $this->config->getGenerationDir('data');
+        $file->setFilename($generationDir . 'routes.php');
         $file->setUses($useClasses);
         $file->setBody($body);
         $file->setSourceContent(str_replace("<?php", $openingTag, $file->generate()));

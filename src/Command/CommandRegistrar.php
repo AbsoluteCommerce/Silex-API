@@ -13,7 +13,6 @@ class CommandRegistrar
         $skipFiles = [
             '.',
             '..',
-            'AbstractCommand.php',
             'CommandRegistrar.php',
         ];
         

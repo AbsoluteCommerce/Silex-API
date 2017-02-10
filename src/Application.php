@@ -54,6 +54,8 @@ class Application
      */
     public function api()
     {
+        #todo need to also handle FATAL to ensure it doesn't dump stack when DEBUG off
+        
         // return 500 by default, to be proven otherwise in the application
         http_response_code(Response::HTTP_INTERNAL_SERVER_ERROR);
         $this->app->error(function (\Exception $e) {

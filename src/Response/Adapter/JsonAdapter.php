@@ -2,7 +2,7 @@
 namespace Absolute\SilexApi\Response\Adapter;
 
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
-use Absolute\SilexApi\Generation\Model\ModelInterface;
+use Absolute\SilexApi\Model\ModelInterface;
 
 class JsonAdapter
 {

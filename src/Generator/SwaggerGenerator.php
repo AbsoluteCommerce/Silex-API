@@ -68,7 +68,7 @@ EOT;
         // write the file
         $file = new FileGenerator;
         $generationDir = $this->config->getGenerationDir('Docs');
-        $file->setFilename($generationDir . 'Swagger.php');
+        $file->setFilename($generationDir . $class->getName() . '.php');
         $file->setBody($class->generate());
         $file->write();
     }
@@ -128,9 +128,9 @@ EOT;
         ];
         
         // add paths
-        foreach ($this->config->getResources() as $_operationId => $_operationData) {
+        foreach ($this->config->getResources() as $_resourceId => $_resourceData) {
             $_parameters = [];
-            foreach ($_operationData['params'] ?? [] as $_paramId => $_paramData) {
+            foreach ($_resourceData['params'] ?? [] as $_paramId => $_paramData) { #todo remove this for < PHP7 support
                 $_parameters[] = [
                     'name' => $_paramId,
                     'in' => 'path',
@@ -139,7 +139,7 @@ EOT;
                     'type' => $_paramData['type'],
                 ];
             }
-            foreach ($_operationData['queries'] ?? [] as $_paramId => $_paramData) {
+            foreach ($_resourceData['queries'] ?? [] as $_paramId => $_paramData) { #todo remove this for < PHP7 support
                 $_parameters[] = [
                     'name' => $_paramId,
                     'in' => 'query',
@@ -148,8 +148,8 @@ EOT;
                     'type' => $_paramData['type'],
                 ];
             }
-            $_body = $_operationData['body'];
-            if ($_body ?? false) {
+            $_body = $_resourceData['body'];
+            if ($_body ?? false) { #todo remove this for < PHP7 support
                 $_parameters[] = [
                     'name' => 'body',
                     'in' => 'body',
@@ -159,11 +159,11 @@ EOT;
                 ];
             }
             
-            $swagger['paths'][$_operationData['path']][$_operationData['method']] = [
-                'tags' => $_operationData['tags'],
-                'summary' => $_operationData['name'],
-                'description' => $_operationData['description'],
-                'operationId' => $_operationId,
+            $swagger['paths'][$_resourceData['path']][$_resourceData['method']] = [
+                'tags' => $_resourceData['tags'],
+                'summary' => $_resourceData['name'],
+                'description' => $_resourceData['description'],
+                'operationId' => ucfirst($_resourceId),
                 'produces' => [
                     'application/json'
                 ],
@@ -171,7 +171,7 @@ EOT;
                 'responses' => [
                     'default' => [
                         'schema' => [
-                            '$ref' => '#/definitions/' . $_operationData['response']
+                            '$ref' => '#/definitions/' . $_resourceData['response']
                         ],
                     ],
                 ]

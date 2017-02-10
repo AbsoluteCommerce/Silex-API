@@ -5,7 +5,7 @@ use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Absolute\SilexApi\Response\Adapter\JsonAdapter;
 use Absolute\SilexApi\Response\Adapter\JsonApiAdapter;
 use Absolute\SilexApi\Response\Adapter\AdapterInterface;
-use Absolute\SilexApi\Generation\Model\ModelInterface;
+use Absolute\SilexApi\Model\ModelInterface;
 
 class ResponseFactory
 {

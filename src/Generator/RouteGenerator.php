@@ -57,7 +57,7 @@ EOT;
         // write the file
         $file = new FileGenerator;
         $generationDir = $this->config->getGenerationDir('Routes');
-        $file->setFilename($generationDir . 'RouteRegistrar.php');
+        $file->setFilename($generationDir . $class->getName() . '.php');
         $file->setBody($class->generate());
         $file->write();
     }
@@ -79,35 +79,37 @@ EOT;
             'Absolute\SilexApi\Response\ResponseFactory',
             'Absolute\SilexApi\Exception\NotImplementedException',
             
-            'Absolute\SilexApi\Generation\Resource as ResourceInterface',
-            'Absolute\SilexApi\Generation\Model',
-            $this->config->getNamespace('Resource'),
+            'Absolute\SilexApi\Generation\Resources as ResourceInterface',
+            'Absolute\SilexApi\Generation\Models',
+            $this->config->getNamespace(GeneratorConfig::NAMESPACE_RESOURCE),
         ];
         
         $body = '';
-        foreach ($this->config->getResources() as $_operationId => $_operationData) {
-            $_paramString = $this->_buildParamString($_operationData['params'] ?? []);
+        foreach ($this->config->getResources() as $_resourceId => $_resourceData) {
+            $_className = ucfirst($_resourceId);
+            
+            $_paramString = $this->_buildParamString($_resourceData['params'] ?? []); #todo remove this for < PHP7 support
             
             $body .= <<<EOT
-// {$_operationData['name']} :: {$_operationData['description']}
-\$app->{$_operationData['method']}('{$_operationData['path']}', function (Request \$request{$_paramString})
+// {$_resourceData['name']} :: {$_resourceData['description']}
+\$app->{$_resourceData['method']}('{$_resourceData['path']}', function (Request \$request{$_paramString})
 {
-    \$resource = new Resource\\{$_operationId};
-    if (!\$resource instanceof ResourceInterface\\{$_operationId}Interface) {
+    \$resource = new Resource\\{$_className};
+    if (!\$resource instanceof ResourceInterface\\{$_className}Interface) {
         throw new NotImplementedException;
     }
     
 EOT;
 
-            if ($_resourceParams = $this->_buildResourceParams($_operationData['params'] ?? [])) {
+            if ($_resourceParams = $this->_buildResourceParams($_resourceData['params'] ?? [])) { #todo remove this for < PHP7 support
                 $body .= PHP_EOL . $_resourceParams . PHP_EOL;
             }
             
-            if ($_resourceQueries = $this->_buildResourceQueries($_operationData['queries'] ?? [])) {
+            if ($_resourceQueries = $this->_buildResourceQueries($_resourceData['queries'] ?? [])) { #todo remove this for < PHP7 support
                 $body .= PHP_EOL . $_resourceQueries . PHP_EOL;
             }
             
-            if ($_resourceBody = $this->_buildResourceBody($_operationData['body'] ?? null)) {
+            if ($_resourceBody = $this->_buildResourceBody($_resourceData['body'] ?? null)) { #todo remove this for < PHP7 support
                 $body .= PHP_EOL . $_resourceBody . PHP_EOL;
             }
 
@@ -206,8 +208,7 @@ EOT;
         $ucFirst = ucfirst($modelClass);
 
         $body = <<<EOT
-    /** @var Model\\{$ucFirst}Model \${$modelClass} */
-    \${$modelClass} = new Model\\{$ucFirst}Model;
+    \${$modelClass} = new Models\\{$ucFirst}Model;
     RequestFactory::hydrateModel(\$request, \${$modelClass});
     \$resource->set{$ucFirst}(\${$modelClass});
 EOT;

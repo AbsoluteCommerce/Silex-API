@@ -21,7 +21,7 @@ class JsonRequest implements RequestInterface
      */
     public function hydrateModel(HttpRequest $request, ModelInterface $model)
     {
-        $data = json_decode($request->getContent());
+        $data = json_decode($request->getContent(), true);
         
         if (!is_array($data)) {
             $data = [];

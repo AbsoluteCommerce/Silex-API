@@ -29,8 +29,19 @@ class ResourceInterfaceGenerator extends GeneratorAbstract
             
             // generate the class
             $class = new InterfaceGenerator;
-            $class->setNamespaceName('Absolute\\SilexApi\\Generation\\Resources');
             $class->setName($_className . 'Interface');
+            
+            // prepare the file
+            $file = new FileGenerator;
+            if (!empty($_resourceData['namespace'])) {
+                $_subDir = ucfirst($_resourceData['namespace']);
+                $generationDir = $this->config->getGenerationDir('Resource/' . $_subDir);
+                $class->setNamespaceName('Absolute\\SilexApi\\Generation\\Resource\\' . $_subDir);
+            } else {
+                $generationDir = $this->config->getGenerationDir('Resource');
+                $class->setNamespaceName('Absolute\\SilexApi\\Generation\\Resource');
+            }
+            $file->setFilename($generationDir . $class->getName() . '.php');
             
             // generate param methods
             $params = array_key_exists('params', $_resourceData)
@@ -127,9 +138,6 @@ class ResourceInterfaceGenerator extends GeneratorAbstract
             }
 
             // write the file
-            $file = new FileGenerator;
-            $generationDir = $this->config->getGenerationDir('Resources');
-            $file->setFilename($generationDir . $class->getName() . '.php');
             $file->setBody($class->generate());
             $file->write();
         }

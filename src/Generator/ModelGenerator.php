@@ -28,7 +28,7 @@ class ModelGenerator extends GeneratorAbstract
         foreach ($this->config->getModels() as $_modelId => $_modelData) {
             // generate the class
             $class = new ClassGenerator;
-            $class->setNamespaceName('Absolute\\SilexApi\\Generation\\Models');
+            $class->setNamespaceName('Absolute\\SilexApi\\Generation\\Model');
             $class->setName(ucfirst($_modelId) . 'Model');
             $class->addUse('Absolute\SilexApi\Model\ModelAbstract');
             $class->setExtendedClass('Absolute\SilexApi\Model\ModelAbstract');
@@ -100,7 +100,7 @@ class ModelGenerator extends GeneratorAbstract
 
             // write the file
             $file = new FileGenerator;
-            $generationDir = $this->config->getGenerationDir('Models');
+            $generationDir = $this->config->getGenerationDir('Model');
             $file->setFilename($generationDir . $class->getName() . '.php');
             $file->setBody($class->generate());
             $file->write();

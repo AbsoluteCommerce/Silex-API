@@ -26,7 +26,7 @@ class RouteGenerator extends GeneratorAbstract
     {
         // generate the class
         $class = new ClassGenerator;
-        $class->setNamespaceName('Absolute\\SilexApi\\Generation\\Routes');
+        $class->setNamespaceName('Absolute\\SilexApi\\Generation\\Route');
         $class->setName('RouteRegistrar');
         $class->addUse('Silex\Application');
 
@@ -44,7 +44,7 @@ class RouteGenerator extends GeneratorAbstract
     . DIRECTORY_SEPARATOR . 'data'
     . DIRECTORY_SEPARATOR;
 
-require_once \$dataPath . 'routes.php';
+require \$dataPath . 'routes.php';
 EOT;
         $class->addMethod(
             'register',
@@ -56,7 +56,7 @@ EOT;
 
         // write the file
         $file = new FileGenerator;
-        $generationDir = $this->config->getGenerationDir('Routes');
+        $generationDir = $this->config->getGenerationDir('Route');
         $file->setFilename($generationDir . $class->getName() . '.php');
         $file->setBody($class->generate());
         $file->write();
@@ -79,23 +79,24 @@ EOT;
             'Absolute\SilexApi\Response\ResponseFactory',
             'Absolute\SilexApi\Exception\NotImplementedException',
             
-            'Absolute\SilexApi\Generation\Resources as ResourceInterface',
-            'Absolute\SilexApi\Generation\Models',
+            'Absolute\SilexApi\Generation\Resource as ResourceInterface',
+            'Absolute\SilexApi\Generation\Model',
             $this->config->getNamespace(GeneratorConfig::NAMESPACE_RESOURCE),
         ];
         
         $body = '';
         foreach ($this->config->getResources() as $_resourceId => $_resourceData) {
             $_className = ucfirst($_resourceId);
+            $_namespace = !empty($_resourceData['namespace']) ? '\\' . ucfirst($_resourceData['namespace']) : '';
             
             $_paramString = $this->_buildParamString($_resourceData['params'] ?? []); #todo remove this for < PHP7 support
             
             $body .= <<<EOT
 // {$_resourceData['name']} :: {$_resourceData['description']}
-\$app->{$_resourceData['method']}('{$_resourceData['path']}', function (Request \$request{$_paramString})
+\$app->{$_resourceData['method']}('{$_resourceData['path']}', function (Request \$request{$_paramString}) use (\$app)
 {
-    \$resource = new Resource\\{$_className};
-    if (!\$resource instanceof ResourceInterface\\{$_className}Interface) {
+    \$resource = new Resource{$_namespace}\\{$_className}(\$app);
+    if (!\$resource instanceof ResourceInterface{$_namespace}\\{$_className}Interface) {
         throw new NotImplementedException;
     }
     
@@ -208,7 +209,7 @@ EOT;
         $ucFirst = ucfirst($modelClass);
 
         $body = <<<EOT
-    \${$modelClass} = new Models\\{$ucFirst}Model;
+    \${$modelClass} = new Model\\{$ucFirst}Model;
     RequestFactory::hydrateModel(\$request, \${$modelClass});
     \$resource->set{$ucFirst}(\${$modelClass});
 EOT;

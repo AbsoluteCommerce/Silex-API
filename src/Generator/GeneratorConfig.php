@@ -81,39 +81,60 @@ class GeneratorConfig
             throw new GenerationException(sprintf('Missing: %s.', self::GENERATION_DIR));
         }
 
-        $generationDir = realpath(rtrim($generationDir, DIRECTORY_SEPARATOR)) . DIRECTORY_SEPARATOR;
-        if (!is_writable($generationDir)) {
-            throw new GenerationException(sprintf('Generation directory not writable: %s', $generationDir));
+        $preparedDir = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $generationDir);
+        $preparedDir = realpath(rtrim($preparedDir, DIRECTORY_SEPARATOR));
+        if (!$preparedDir) {
+            throw new GenerationException(sprintf('Generation directory does not exist: %s', $generationDir));
+        }
+        
+        $preparedDir = $preparedDir . DIRECTORY_SEPARATOR;
+        if (!is_writable($preparedDir)) {
+            throw new GenerationException(sprintf('Generation directory is not writable: %s', $preparedDir));
         }
         
         if ($path === null) {
-            return $generationDir;
+            return $preparedDir;
         }
         
         $path = str_replace('/', DIRECTORY_SEPARATOR, $path);
-        $generationDirWithPath = $generationDir . $path . DIRECTORY_SEPARATOR;
-        @mkdir($generationDirWithPath, 0777, true);
+        $preparedDirWithPath = $preparedDir . $path . DIRECTORY_SEPARATOR;
+        @mkdir($preparedDirWithPath, 0777, true);
 
-        return $generationDirWithPath;
+        return $preparedDirWithPath;
     }
 
     /**
+     * @param string $path
      * @return string
      * @throws GenerationException
      */
-    public function getResourceDir()
+    public function getResourceDir($path = null)
     {
         $resourceDir = $this->data[self::RESOURCE_DIR];
         if (empty($resourceDir)) {
             throw new GenerationException(sprintf('Missing: %s.', self::RESOURCE_DIR));
         }
 
-        $resourceDir = realpath(rtrim($resourceDir, DIRECTORY_SEPARATOR)) . DIRECTORY_SEPARATOR;
-        if (!is_writable($resourceDir)) {
-            throw new GenerationException(sprintf('Resource directory not writable: %s', $resourceDir));
+        $preparedDir = str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $resourceDir);
+        $preparedDir = realpath(rtrim($preparedDir, DIRECTORY_SEPARATOR));
+        if (!$preparedDir) {
+            throw new GenerationException(sprintf('Resource directory does not exist: %s', $resourceDir));
         }
         
-        return $resourceDir;
+        $preparedDir = $preparedDir . DIRECTORY_SEPARATOR;
+        if (!is_writable($preparedDir)) {
+            throw new GenerationException(sprintf('Resource directory is not writable: %s', $preparedDir));
+        }
+
+        if ($path === null) {
+            return $preparedDir;
+        }
+
+        $path = str_replace('/', DIRECTORY_SEPARATOR, $path);
+        $preparedDirWithPath = $preparedDir . $path . DIRECTORY_SEPARATOR;
+        @mkdir($preparedDirWithPath, 0777, true);
+
+        return $preparedDirWithPath;
     }
 
     /**

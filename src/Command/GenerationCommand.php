@@ -17,9 +17,9 @@ use Absolute\SilexApi\Generator\SwaggerGenerator;
 
 class GenerationCommand extends Command
 {
-    const ARGUMENT_DATA_FILE = 'data_file';
+    const ARGUMENT_DATA_FILE = 'data-file';
     
-    const OPTION_IMPLEMENT_RESOURCES = 'implement_resources';
+    const OPTION_IMPLEMENT_RESOURCES = 'implement-resources';
     
     /**
      * @inheritdoc

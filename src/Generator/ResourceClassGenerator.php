@@ -27,18 +27,29 @@ class ResourceClassGenerator extends GeneratorAbstract
         foreach ($this->config->getResources() as $_resourceId => $_resourceData) {
             $_className = ucfirst($_resourceId);
             
-            // skip any implementations that already exist
-            $resourceDir = $this->config->getResourceDir();
-            if (@file_exists($resourceDir . $_className . '.php')) {
-                continue;
-            }
-            
             // generate the class
             $class = new ClassGenerator;
-            $class->setNamespaceName($this->config->getNamespace(GeneratorConfig::NAMESPACE_RESOURCE));
             $class->setName($_className);
-            $class->addUse('Absolute\\SilexApi\\Generation\\Resources\\' . $_className . 'Interface');
-            $class->setImplementedInterfaces(['Absolute\\SilexApi\\Generation\\Resources\\' . $_className . 'Interface']);
+            $class->addUse('Absolute\\SilexApi\\Generation\\Resource\\' . $_className . 'Interface');
+
+            // prepare the file
+            $file = new FileGenerator;
+            if (!empty($_resourceData['namespace'])) {
+                $_subDir = ucfirst($_resourceData['namespace']);
+                $resourceDir = $this->config->getResourceDir($_subDir);
+                $class->setNamespaceName($this->config->getNamespace(GeneratorConfig::NAMESPACE_RESOURCE) . '\\' . $_subDir);
+                $class->setImplementedInterfaces(['Absolute\\SilexApi\\Generation\\Resource\\' . $_subDir . '\\' . $_className . 'Interface']);
+            } else {
+                $resourceDir = $this->config->getResourceDir();
+                $class->setNamespaceName($this->config->getNamespace(GeneratorConfig::NAMESPACE_RESOURCE));
+                $class->setImplementedInterfaces(['Absolute\\SilexApi\\Generation\\Resource\\' . $_className . 'Interface']);
+            }
+            $file->setFilename($resourceDir . $class->getName() . '.php');
+
+            // skip any implementations that already exist
+            if (@file_exists($file->getFilename())) {
+                continue;
+            }
             
             // generate param methods
             $params = array_key_exists('params', $_resourceData)
@@ -150,9 +161,6 @@ class ResourceClassGenerator extends GeneratorAbstract
             }
 
             // write the file
-            $file = new FileGenerator;
-            $resourceDir = $this->config->getResourceDir();
-            $file->setFilename($resourceDir . $class->getName() . '.php');
             $file->setBody($class->generate());
             $file->write();
         }

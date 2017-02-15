@@ -109,7 +109,7 @@ class ResourceClassGenerator extends GeneratorAbstract
                 ? $_resourceData['body']
                 : false;
             if ($bodyModel) {
-                $_modelName = ucfirst($bodyModel) . 'Model';
+                $_modelName = ucfirst($bodyModel);
                 $class->addUse("Absolute\\SilexApi\\Generation\\Model\\{$_modelName}");
 
                 $_propertyGenerator = new PropertyGenerator;
@@ -146,12 +146,12 @@ class ResourceClassGenerator extends GeneratorAbstract
                 $_responseModel = ucfirst($_resourceData['response']);
                 $_hasArray = strpos($_responseModel, '[]');
                 if ($_hasArray !== false) {
-                    $_responseModel = substr($_responseModel, 0, $_hasArray) . 'Model';
-                    $_body = "return [\$this->modelFactory->get('{$_responseModel}')];";
+                    $_responseModel = substr($_responseModel, 0, $_hasArray);
+                    $_body = "return [\$this->modelFactory->get({$_responseModel}::class)];";
                 } else {
-                    $_responseModel .= 'Model';
-                    $_body = "return \$this->modelFactory->get('{$_responseModel}');";
+                    $_body = "return \$this->modelFactory->get({$_responseModel}::class);";
                 }
+                $class->addUse("Absolute\\SilexApi\\Generation\\Model\\{$_responseModel}");
                 $class->addMethod(
                     'execute',
                     [],

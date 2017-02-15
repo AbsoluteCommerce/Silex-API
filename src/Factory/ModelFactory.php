@@ -12,7 +12,6 @@ class ModelFactory
      */
     public static function get($className, array $data = [])
     {
-        $className = 'Absolute\\SilexApi\\Generation\\Model\\' . $className;
         return new $className($data);
     }
 }

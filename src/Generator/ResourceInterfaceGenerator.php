@@ -17,49 +17,7 @@ class ResourceInterfaceGenerator extends GeneratorAbstract
      */
     public function generate()
     {
-        $this->_generateFactory();
         $this->_generateInterfaces();
-    }
-
-    /**
-     *
-     */
-    private function _generateFactory()
-    {
-        // generate the class
-        $class = new ClassGenerator;
-        $class->setNamespaceName('Absolute\\SilexApi\\Generation\\Resource');
-        $class->setName('ResourceFactory');
-        $class->addUse('Silex\Application');
-        
-        // generate get() method
-        $docBlock = new DocBlockGenerator;
-        $docBlock->setTags([
-            new ParamTag('className', 'string'),
-            new ParamTag('app', 'Application'),
-        ]);
-        $params = [
-            new ParameterGenerator('className'),
-            new ParameterGenerator('app', 'Silex\Application'),
-        ];
-        $methodBody = <<<EOT
-\$className = '{$this->config->getNamespace(GeneratorConfig::NAMESPACE_RESOURCE)}\\\' . \$className;
-return new \$className(\$app);
-EOT;
-        $class->addMethod(
-            'get',
-            $params,
-            MethodGenerator::FLAG_PUBLIC | MethodGenerator::FLAG_STATIC,
-            $methodBody,
-            $docBlock
-        );
-
-        // write the file
-        $file = new FileGenerator;
-        $generationDir = $this->config->getGenerationDir('Resource');
-        $file->setFilename($generationDir . $class->getName() . '.php');
-        $file->setBody($class->generate());
-        $file->write();
     }
 
     /**
@@ -127,7 +85,7 @@ EOT;
                 ? $_resourceData['body']
                 : false;
             if ($bodyModel) {
-                $_modelName = ucfirst($bodyModel) . 'Model';
+                $_modelName = ucfirst($bodyModel);
                 $class->addUse("Absolute\\SilexApi\\Generation\\Model\\{$_modelName}");
 
                 $class->addMethod(
@@ -161,9 +119,7 @@ EOT;
                 $_responseModel = ucfirst($_resourceData['response']);
                 $_hasArray = strpos($_responseModel, '[]');
                 if ($_hasArray !== false) {
-                    $_responseModel = substr($_responseModel, 0, $_hasArray) . 'Model';
-                } else {
-                    $_responseModel .= 'Model';
+                    $_responseModel = substr($_responseModel, 0, $_hasArray);
                 }
                 $class->addUse("Absolute\\SilexApi\\Generation\\Model\\{$_responseModel}");
                 $docBlock = new DocBlockGenerator;

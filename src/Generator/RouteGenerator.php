@@ -76,14 +76,9 @@ EOT;
             'Silex\Application',
             'Symfony\Component\HttpFoundation\Request as HttpRequest',
             'Absolute\SilexApi\SilexApi',
-            'Absolute\SilexApi\Factory\ModelFactory',
-            'Absolute\SilexApi\Factory\RequestFactory',
-            'Absolute\SilexApi\Factory\ResponseFactory',
             'Absolute\SilexApi\Request\RequestInterface',
             'Absolute\SilexApi\Response\ResponseInterface',
             'Absolute\SilexApi\Exception\NotImplementedException',
-            
-            'Absolute\SilexApi\Generation\Resource\ResourceFactory',
             'Absolute\SilexApi\Generation\Resource as ResourceInterface',
             'Absolute\SilexApi\Generation\Model',
             $this->config->getNamespace(GeneratorConfig::NAMESPACE_RESOURCE),
@@ -103,7 +98,7 @@ EOT;
 \$app->{$_resourceData['method']}('{$_resourceData['path']}', function (HttpRequest \$httpRequest{$_paramString}) use (\$app)
 {
     /** @var Resource\\{$_className} \$resource */
-    \$resource = \$app[SilexApi::DI_RESOURCE_FACTORY]->get('{$_className}', \$app);
+    \$resource = \$app[SilexApi::DI_RESOURCE_FACTORY]->get(Resource\\{$_className}::class, \$app);
     if (!\$resource instanceof ResourceInterface\\{$_className}Interface) {
         throw new NotImplementedException;
     }
@@ -222,7 +217,7 @@ EOT;
         $ucFirst = ucfirst($modelClass);
 
         $body = <<<EOT
-    \${$modelClass} = \$app[SilexApi::DI_MODEL_FACTORY]->get('{$ucFirst}Model');
+    \${$modelClass} = \$app[SilexApi::DI_MODEL_FACTORY]->get(Model\\{$ucFirst}::class);
     \$app[SilexApi::DI_REQUEST_FACTORY]->get(\$httpRequest)->hydrateModel(\$httpRequest, \${$modelClass});
     \$resource->set{$ucFirst}(\${$modelClass});
 EOT;

@@ -7,7 +7,7 @@ use Absolute\SilexApi\Generation\Route\RouteRegistrar;
 use Absolute\SilexApi\Factory\ModelFactory;
 use Absolute\SilexApi\Factory\RequestFactory;
 use Absolute\SilexApi\Factory\ResponseFactory;
-use Absolute\SilexApi\Generation\Resource\ResourceFactory;
+use Absolute\SilexApi\Factory\ResourceFactory;
 use Absolute\SilexApi\Generation\Docs\Swagger;
 
 class SilexApi

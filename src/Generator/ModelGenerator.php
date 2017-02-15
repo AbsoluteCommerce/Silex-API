@@ -29,7 +29,7 @@ class ModelGenerator extends GeneratorAbstract
             // generate the class
             $class = new ClassGenerator;
             $class->setNamespaceName('Absolute\\SilexApi\\Generation\\Model');
-            $class->setName(ucfirst($_modelId) . 'Model');
+            $class->setName(ucfirst($_modelId));
             $class->addUse('Absolute\SilexApi\Model\ModelAbstract');
             $class->setExtendedClass('Absolute\SilexApi\Model\ModelAbstract');
             

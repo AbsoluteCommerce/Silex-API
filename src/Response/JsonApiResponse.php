@@ -1,9 +1,9 @@
 <?php
-namespace Absolute\SilexApi\Response\Adapter;
+namespace Absolute\SilexApi\Response;
 
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 
-class JsonApiAdapter implements AdapterInterface
+class JsonApiResponse implements ResponseInterface
 {
     const ACCEPT = 'application/vnd.api+json';
 

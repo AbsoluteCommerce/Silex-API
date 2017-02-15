@@ -2,6 +2,7 @@
 namespace Absolute\SilexApi\Generator;
 
 use Zend\Code\Generator\FileGenerator;
+use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\InterfaceGenerator;
 use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\ParameterGenerator;
@@ -16,7 +17,49 @@ class ResourceInterfaceGenerator extends GeneratorAbstract
      */
     public function generate()
     {
+        $this->_generateFactory();
         $this->_generateInterfaces();
+    }
+
+    /**
+     *
+     */
+    private function _generateFactory()
+    {
+        // generate the class
+        $class = new ClassGenerator;
+        $class->setNamespaceName('Absolute\\SilexApi\\Generation\\Resource');
+        $class->setName('ResourceFactory');
+        $class->addUse('Silex\Application');
+        
+        // generate get() method
+        $docBlock = new DocBlockGenerator;
+        $docBlock->setTags([
+            new ParamTag('className', 'string'),
+            new ParamTag('app', 'Application'),
+        ]);
+        $params = [
+            new ParameterGenerator('className'),
+            new ParameterGenerator('app', 'Silex\Application'),
+        ];
+        $methodBody = <<<EOT
+\$className = '{$this->config->getNamespace(GeneratorConfig::NAMESPACE_RESOURCE)}\\\' . \$className;
+return new \$className(\$app);
+EOT;
+        $class->addMethod(
+            'get',
+            $params,
+            MethodGenerator::FLAG_PUBLIC | MethodGenerator::FLAG_STATIC,
+            $methodBody,
+            $docBlock
+        );
+
+        // write the file
+        $file = new FileGenerator;
+        $generationDir = $this->config->getGenerationDir('Resource');
+        $file->setFilename($generationDir . $class->getName() . '.php');
+        $file->setBody($class->generate());
+        $file->write();
     }
 
     /**

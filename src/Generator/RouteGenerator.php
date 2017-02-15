@@ -74,11 +74,16 @@ EOT;
         
         $useClasses = [
             'Silex\Application',
-            'Symfony\Component\HttpFoundation\Request',
-            'Absolute\SilexApi\Request\RequestFactory',
-            'Absolute\SilexApi\Response\ResponseFactory',
+            'Symfony\Component\HttpFoundation\Request as HttpRequest',
+            'Absolute\SilexApi\SilexApi',
+            'Absolute\SilexApi\Factory\ModelFactory',
+            'Absolute\SilexApi\Factory\RequestFactory',
+            'Absolute\SilexApi\Factory\ResponseFactory',
+            'Absolute\SilexApi\Request\RequestInterface',
+            'Absolute\SilexApi\Response\ResponseInterface',
             'Absolute\SilexApi\Exception\NotImplementedException',
             
+            'Absolute\SilexApi\Generation\Resource\ResourceFactory',
             'Absolute\SilexApi\Generation\Resource as ResourceInterface',
             'Absolute\SilexApi\Generation\Model',
             $this->config->getNamespace(GeneratorConfig::NAMESPACE_RESOURCE),
@@ -87,16 +92,19 @@ EOT;
         $body = '';
         foreach ($this->config->getResources() as $_resourceId => $_resourceData) {
             $_className = ucfirst($_resourceId);
-            $_namespace = !empty($_resourceData['namespace']) ? '\\' . ucfirst($_resourceData['namespace']) : '';
+            if (!empty($_resourceData['namespace'])) {
+                $_className = ucfirst($_resourceData['namespace']) . '\\' . $_className;
+            }
             
             $_paramString = $this->_buildParamString($_resourceData['params'] ?? []); #todo remove this for < PHP7 support
             
             $body .= <<<EOT
 // {$_resourceData['name']} :: {$_resourceData['description']}
-\$app->{$_resourceData['method']}('{$_resourceData['path']}', function (Request \$request{$_paramString}) use (\$app)
+\$app->{$_resourceData['method']}('{$_resourceData['path']}', function (HttpRequest \$httpRequest{$_paramString}) use (\$app)
 {
-    \$resource = new Resource{$_namespace}\\{$_className}(\$app);
-    if (!\$resource instanceof ResourceInterface{$_namespace}\\{$_className}Interface) {
+    /** @var Resource\\{$_className} \$resource */
+    \$resource = \$app[SilexApi::DI_RESOURCE_FACTORY]->get('{$_className}', \$app);
+    if (!\$resource instanceof ResourceInterface\\{$_className}Interface) {
         throw new NotImplementedException;
     }
     
@@ -116,7 +124,9 @@ EOT;
 
             $body .= <<<EOT
 
-    return ResponseFactory::prepareResponse(\$request, \$resource->execute());
+    /** @var ResponseInterface \$response */
+    \$response = \$app[SilexApi::DI_RESPONSE_FACTORY]->get(\$httpRequest);
+    return \$response->prepareResponse(\$httpRequest, \$resource->execute());
 });
 
 
@@ -185,10 +195,13 @@ EOT;
             return false;
         }
         
-        $buildData = [];
+        $buildData = [
+            "    /** @var RequestInterface \$request */",
+            "    \$request = \$app[SilexApi::DI_REQUEST_FACTORY]->get(\$httpRequest);",
+        ];
         foreach ($params as $_paramId => $_paramData) {
             $_ucFirst = ucfirst($_paramId);
-            $buildData[] = "    \$resource->set{$_ucFirst}(RequestFactory::getQuery(\$request, '{$_paramData['field']}'));";
+            $buildData[] = "    \$resource->set{$_ucFirst}(\$request->getQuery(\$httpRequest, '{$_paramData['field']}'));";
         }
         
         $result = implode(PHP_EOL, $buildData);
@@ -209,8 +222,8 @@ EOT;
         $ucFirst = ucfirst($modelClass);
 
         $body = <<<EOT
-    \${$modelClass} = new Model\\{$ucFirst}Model;
-    RequestFactory::hydrateModel(\$request, \${$modelClass});
+    \${$modelClass} = \$app[SilexApi::DI_MODEL_FACTORY]->get('{$ucFirst}Model');
+    \$app[SilexApi::DI_REQUEST_FACTORY]->get(\$httpRequest)->hydrateModel(\$httpRequest, \${$modelClass});
     \$resource->set{$ucFirst}(\${$modelClass});
 EOT;
         return $body;

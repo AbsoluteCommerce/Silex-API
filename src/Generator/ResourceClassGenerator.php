@@ -30,20 +30,23 @@ class ResourceClassGenerator extends GeneratorAbstract
             // generate the class
             $class = new ClassGenerator;
             $class->setName($_className);
-            $class->addUse('Absolute\\SilexApi\\Generation\\Resource\\' . $_className . 'Interface');
 
             // prepare the file
             $file = new FileGenerator;
             if (!empty($_resourceData['namespace'])) {
                 $_subDir = ucfirst($_resourceData['namespace']);
                 $resourceDir = $this->config->getResourceDir($_subDir);
+                $class->addUse('Absolute\\SilexApi\\Generation\\Resource\\' . $_subDir . '\\' . $_className . 'Interface');
                 $class->setNamespaceName($this->config->getNamespace(GeneratorConfig::NAMESPACE_RESOURCE) . '\\' . $_subDir);
                 $class->setImplementedInterfaces(['Absolute\\SilexApi\\Generation\\Resource\\' . $_subDir . '\\' . $_className . 'Interface']);
             } else {
                 $resourceDir = $this->config->getResourceDir();
+                $class->addUse('Absolute\\SilexApi\\Generation\\Resource\\' . $_className . 'Interface');
                 $class->setNamespaceName($this->config->getNamespace(GeneratorConfig::NAMESPACE_RESOURCE));
                 $class->setImplementedInterfaces(['Absolute\\SilexApi\\Generation\\Resource\\' . $_className . 'Interface']);
             }
+            $class->addUse('Absolute\\SilexApi\\Resource\\ResourceAbstract');
+            $class->setExtendedClass('Absolute\\SilexApi\\Resource\\ResourceAbstract');
             $file->setFilename($resourceDir . $class->getName() . '.php');
 
             // skip any implementations that already exist
@@ -107,7 +110,7 @@ class ResourceClassGenerator extends GeneratorAbstract
                 : false;
             if ($bodyModel) {
                 $_modelName = ucfirst($bodyModel) . 'Model';
-                $class->addUse("Absolute\\SilexApi\\Generation\\Models\\{$_modelName}");
+                $class->addUse("Absolute\\SilexApi\\Generation\\Model\\{$_modelName}");
 
                 $_propertyGenerator = new PropertyGenerator;
                 $_propertyGenerator
@@ -121,7 +124,7 @@ class ResourceClassGenerator extends GeneratorAbstract
                 $class->addMethod(
                     'set' . ucfirst($bodyModel),
                     [
-                        new ParameterGenerator($bodyModel, 'Absolute\\SilexApi\\Generation\\Models\\' . $_modelName),
+                        new ParameterGenerator($bodyModel, 'Absolute\\SilexApi\\Generation\\Model\\' . $_modelName),
                     ],
                     MethodGenerator::FLAG_PUBLIC,
                     "\$this->{$bodyModel} = \${$bodyModel};",
@@ -144,12 +147,11 @@ class ResourceClassGenerator extends GeneratorAbstract
                 $_hasArray = strpos($_responseModel, '[]');
                 if ($_hasArray !== false) {
                     $_responseModel = substr($_responseModel, 0, $_hasArray) . 'Model';
-                    $_body = "return [new {$_responseModel}];";
+                    $_body = "return [\$this->modelFactory->get('{$_responseModel}')];";
                 } else {
                     $_responseModel .= 'Model';
-                    $_body = "return new {$_responseModel};";
+                    $_body = "return \$this->modelFactory->get('{$_responseModel}');";
                 }
-                $class->addUse("Absolute\\SilexApi\\Generation\\Models\\{$_responseModel}");
                 $class->addMethod(
                     'execute',
                     [],

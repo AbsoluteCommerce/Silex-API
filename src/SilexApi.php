@@ -4,10 +4,19 @@ namespace Absolute\SilexApi;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Response;
 use Absolute\SilexApi\Generation\Route\RouteRegistrar;
+use Absolute\SilexApi\Factory\ModelFactory;
+use Absolute\SilexApi\Factory\RequestFactory;
+use Absolute\SilexApi\Factory\ResponseFactory;
+use Absolute\SilexApi\Generation\Resource\ResourceFactory;
 use Absolute\SilexApi\Generation\Docs\Swagger;
 
 class SilexApi
 {
+    const DI_MODEL_FACTORY    = 'model_factory';
+    const DI_REQUEST_FACTORY  = 'request_factory';
+    const DI_RESPONSE_FACTORY = 'response_factory';
+    const DI_RESOURCE_FACTORY = 'resource_factory';
+    
     /**
      * @param Application $app
      * @param Config $config
@@ -32,6 +41,23 @@ class SilexApi
         // include auto-generated routes for the client
         $routes = new RouteRegistrar;
         $routes->register($app);
+        
+        // include default factories
+        $factories = [
+            self::DI_MODEL_FACTORY    => ModelFactory::class,
+            self::DI_REQUEST_FACTORY  => RequestFactory::class,
+            self::DI_RESPONSE_FACTORY => ResponseFactory::class,
+            self::DI_RESOURCE_FACTORY => ResourceFactory::class,
+        ];
+        foreach ($factories as $_di => $_factoryClass) {
+            if ($app->offsetExists($_di)) {
+                continue;
+            }
+
+            $app[$_di] = function () use ($_factoryClass) {
+                return new $_factoryClass;
+            };
+        }
     }
 
     /**

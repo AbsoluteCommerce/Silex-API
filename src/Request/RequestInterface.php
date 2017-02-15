@@ -1,10 +1,10 @@
 <?php
-namespace Absolute\SilexApi\Request\Adapter;
+namespace Absolute\SilexApi\Request;
 
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Absolute\SilexApi\Model\ModelInterface;
 
-interface AdapterInterface
+interface RequestInterface
 {
     /**
      * @param HttpRequest $request

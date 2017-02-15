@@ -85,12 +85,12 @@ class ResourceInterfaceGenerator extends GeneratorAbstract
                 : false;
             if ($bodyModel) {
                 $_modelName = ucfirst($bodyModel) . 'Model';
-                $class->addUse("Absolute\\SilexApi\\Generation\\Models\\{$_modelName}");
+                $class->addUse("Absolute\\SilexApi\\Generation\\Model\\{$_modelName}");
 
                 $class->addMethod(
                     'set' . ucfirst($bodyModel),
                     [
-                        new ParameterGenerator($bodyModel, 'Absolute\\SilexApi\\Generation\\Models\\' . $_modelName),
+                        new ParameterGenerator($bodyModel, 'Absolute\\SilexApi\\Generation\\Model\\' . $_modelName),
                     ],
                     MethodGenerator::FLAG_PUBLIC,
                     null,
@@ -122,7 +122,7 @@ class ResourceInterfaceGenerator extends GeneratorAbstract
                 } else {
                     $_responseModel .= 'Model';
                 }
-                $class->addUse("Absolute\\SilexApi\\Generation\\Models\\{$_responseModel}");
+                $class->addUse("Absolute\\SilexApi\\Generation\\Model\\{$_responseModel}");
                 $docBlock = new DocBlockGenerator;
                 $docBlock->setTags([
                     new ReturnTag($_responseModel . (($_hasArray !== false) ? '[]' : null)),

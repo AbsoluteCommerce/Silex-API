@@ -114,10 +114,8 @@ EOT;
             ],
             'paths' => [],
             'securityDefinitions' => [
-                'api_key' => [
-                    'type' => 'apiKey',
-                    'name' => 'api_key',
-                    'in'   => 'header',
+                'http_auth' => [
+                    'type' => 'basic',
                 ],
             ],
             'definitions' => [],

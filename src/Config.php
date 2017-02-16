@@ -3,9 +3,10 @@ namespace Absolute\SilexApi;
 
 class Config
 {
-    const DEBUG    = 'debug';
-    const SCHEME   = 'scheme';
-    const HOSTNAME = 'hostname';
+    const DEBUG           = 'debug';
+    const SCHEME          = 'scheme';
+    const HOSTNAME        = 'hostname';
+    const AUTH_HTTP_BASIC = 'auth_http_basic';
 
     /** @var array */
     private $corsHeaders = [
@@ -86,5 +87,19 @@ class Config
     public function getCorsHeaders()
     {
         return $this->corsHeaders;
+    }
+
+    /**
+     * @return array|bool
+     */
+    public function getBasicAuthCredentials()
+    {
+        $credentials = $this->getConfig(self::AUTH_HTTP_BASIC);
+        
+        if (!is_array($credentials)) {
+            $credentials = false;
+        }
+        
+        return $credentials;
     }
 }

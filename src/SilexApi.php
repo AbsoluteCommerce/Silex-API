@@ -2,6 +2,7 @@
 namespace Absolute\SilexApi;
 
 use Silex\Application;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Absolute\SilexApi\Generation\Route\RouteRegistrar;
 use Absolute\SilexApi\Factory\ModelFactory;
@@ -25,6 +26,27 @@ class SilexApi
     {
         // set Silex debug mode
         $app['debug'] = $config->getIsDebug();
+
+        // handle HTTP Basic Auth
+        if ($credentials = $config->getBasicAuthCredentials()) {
+            $app->before(function(Request $request) use ($credentials) {
+                $username = $request->headers->get('php_auth_user');
+                $password = $request->headers->get('php_auth_pw');
+
+                if (!$username
+                    || !$password
+                    || !isset($credentials[$username])
+                    || $password != $credentials[$username]
+                ) {
+                    return new Response(
+                        Response::$statusTexts[Response::HTTP_UNAUTHORIZED],
+                        Response::HTTP_UNAUTHORIZED
+                    );
+                }
+                
+                return null;
+            });
+        }
 
         // return 500 by default, to be proven otherwise in the application
         http_response_code(Response::HTTP_INTERNAL_SERVER_ERROR);

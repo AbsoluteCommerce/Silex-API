@@ -81,34 +81,21 @@ EOT;
         $swagger = [
             'swagger' => '2.0',
             'info' => [
-                'description' => '',
-                'version' => '1.0.0',
-                'title' => 'Absolute SilexApi',
+                'version' => $this->config->getApiVersion(),
+                'title' => $this->config->getApiName(),
+                'description' => $this->config->getApiDescription(),
                 'termsOfService' => '',
                 'contact' => [
-                    'email' => '',
+                    'email' => $this->config->getApiEmail(),
                 ],
                 'license' => [
-                    'name' => '',
-                    'url'  => '',
+                    'name' => $this->config->getApiLicenseName(),
+                    'url'  => $this->config->getApiLicenseUrl(),
                 ],
             ],
             'host' => '{HOSTNAME}',
-            'basePath' => '',
-            'tags' => [
-                [
-                    'name' => 'test',
-                    'description' => 'Test Endpoints',
-                ],
-                [
-                    'name' => 'home',
-                    'description' => 'API Home',
-                ],
-                [
-                    'name' => 'user',
-                    'description' => 'Users / Customers',
-                ],
-            ],
+            'basePath' => '{BASEPATH}',
+            'tags' => [],
             'schemes' => [
                 '{SCHEME}',
             ],
@@ -126,6 +113,7 @@ EOT;
         ];
         
         // add paths
+        $tags = [];
         foreach ($this->config->getResources() as $_resourceId => $_resourceData) {
             $_parameters = [];
             foreach ($_resourceData['params'] ?? [] as $_paramId => $_paramData) { #todo remove this for < PHP7 support
@@ -153,42 +141,80 @@ EOT;
                     'in' => 'body',
                     'description' => $_body,
                     'required' => true,
-                    'schema' => '#/definitions/' . $_body,
+                    'schema' => [
+                        '$ref' => '#/definitions/_single_' . $_body,
+                    ],
                 ];
             }
             
+            // append the resource data
             $swagger['paths'][$_resourceData['path']][$_resourceData['method']] = [
                 'tags' => $_resourceData['tags'],
                 'summary' => $_resourceData['name'],
                 'description' => $_resourceData['description'],
                 'operationId' => ucfirst($_resourceId),
+                'consumes' => [
+                    'application/json'
+                ],
                 'produces' => [
                     'application/json'
                 ],
                 'parameters' => $_parameters,
-                'responses' => [
-                    'default' => [
-                        'schema' => [
-                            '$ref' => '#/definitions/' . $_resourceData['response']
-                        ],
-                    ],
-                ]
+            ];
+
+            // append the response data
+            if ($_resourceData['response'] === null) {
+                $_response = null;
+            } else {
+                if (substr($_resourceData['response'], -2) == '[]') {
+                    $_responseDefinition = '_multiple_' . substr($_resourceData['response'], 0, strlen($_resourceData['response']) - 2);
+                } else {
+                    $_responseDefinition = '_single_' . $_resourceData['response'];
+                }
+                
+                $_response = [
+                    '$ref' => '#/definitions/' . $_responseDefinition,
+                ];
+            }
+            $swagger['paths'][$_resourceData['path']][$_resourceData['method']]['responses'] = [
+                'default' => [
+                    'schema' => $_response,
+                ],
+            ];
+            
+            // append to tags
+            $tags = array_merge($tags, $_resourceData['tags']);
+        }
+        
+        // add tags
+        $tags = array_unique($tags);
+        foreach ($tags as $_tag) {
+            $swagger['tags'][] = [
+                'name' => strtolower(str_replace(' ', '_', $_tag)),
+                'description' => ucwords($_tag),
             ];
         }
         
         // add definitions
         foreach ($this->config->getModels() as $_modelType => $_modelData) {
-            $swagger['definitions'][$_modelType] = [
+            $swagger['definitions']['_single_' . $_modelType] = [
                 'type' => 'object',
                 'properties' => [],
             ];
-            
-            foreach ($_modelData['properties'] as $_field => $_type) {
-                $swagger['definitions'][$_modelType]['properties'][$_field] = [
-                    'type' => $_type,
-                    'format' => $this->_mapFormat($_type),
+            foreach ($_modelData['properties'] as $_field => $_fieldData) {
+                $swagger['definitions']['_single_' . $_modelType]['properties'][$_field] = [
+                    'type' => $_fieldData['type'],
+                    'format' => $this->_mapFormat($_fieldData['type']),
+                    'example' => $_fieldData['example'],
                 ];
             }
+
+            $swagger['definitions']['_multiple_' . $_modelType] = [
+                'type' => 'array',
+                'items' => [
+                    '$ref' => '#/definitions/_single_' . $_modelType,
+                ],
+            ];
         }
 
         // write the file

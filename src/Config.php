@@ -6,6 +6,7 @@ class Config
     const DEBUG           = 'debug';
     const SCHEME          = 'scheme';
     const HOSTNAME        = 'hostname';
+    const BASE_PATH       = 'base_path';
     const AUTH_HTTP_BASIC = 'auth_http_basic';
 
     /** @var array */
@@ -18,9 +19,10 @@ class Config
     
     /** @var array */
     private $config = [
-        self::DEBUG    => false,
-        self::SCHEME   => 'http',
-        self::HOSTNAME => 'localhost',
+        self::DEBUG     => false,
+        self::SCHEME    => 'http',
+        self::HOSTNAME  => 'localhost',
+        self::BASE_PATH => '',
     ];
 
     /**
@@ -79,6 +81,16 @@ class Config
         $hostname = $this->getConfig(self::HOSTNAME);
         
         return $hostname;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBasePath()
+    {
+        $basePath = $this->getConfig(self::BASE_PATH);
+        
+        return $basePath;
     }
 
     /**

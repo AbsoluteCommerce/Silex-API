@@ -5,6 +5,13 @@ use Absolute\SilexApi\Exception\GenerationException;
 
 class GeneratorConfig
 {
+    const API_VERSION      = 'api_version';
+    const API_NAME         = 'api_name';
+    const API_DESCRIPTION  = 'api_description';
+    const API_EMAIL        = 'api_email';
+    const API_LICENSE_NAME = 'api_license_name';
+    const API_LICENSE_URL  = 'api_license_url';
+    
     const NAMESPACE_RESOURCE = 'namespace_resource';
     const GENERATION_DIR     = 'generation_dir';
     const RESOURCE_DIR       = 'resource_dir';
@@ -39,8 +46,66 @@ class GeneratorConfig
         $this->getNamespace(self::NAMESPACE_RESOURCE);
         $this->getGenerationDir();
         $this->getResourceDir();
-        $this->getResources();
-        $this->getModels();
+    }
+
+    /**
+     * @return string
+     */
+    public function getApiVersion()
+    {
+        $apiVersion = $this->data[self::API_VERSION];
+        
+        return $apiVersion;
+    }
+
+    /**
+     * @return string
+     */
+    public function getApiName()
+    {
+        $apiName = $this->data[self::API_NAME];
+        
+        return $apiName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getApiDescription()
+    {
+        $apiDescription = $this->data[self::API_DESCRIPTION];
+        
+        return $apiDescription;
+    }
+
+    /**
+     * @return string
+     */
+    public function getApiEmail()
+    {
+        $apiEmail = $this->data[self::API_EMAIL];
+        
+        return $apiEmail;
+    }
+
+    /**
+     * @return string
+     */
+    public function getApiLicenseName()
+    {
+        $apiLicenseName = $this->data[self::API_LICENSE_NAME];
+        
+        return $apiLicenseName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getApiLicenseUrl()
+    {
+        $apiLicenseUrl = $this->data[self::API_LICENSE_URL];
+        
+        return $apiLicenseUrl;
     }
     
     /**

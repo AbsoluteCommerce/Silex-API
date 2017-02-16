@@ -100,6 +100,7 @@ class SilexApi
         $swaggerJson = $swagger->parse([
             '{SCHEME}'   => $config->getScheme(),
             '{HOSTNAME}' => $config->getHostname(),
+            '{BASEPATH}' => $config->getBasePath(),
         ]);
         
         // return the Swagger JSON

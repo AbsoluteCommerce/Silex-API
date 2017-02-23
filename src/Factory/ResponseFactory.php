@@ -2,6 +2,7 @@
 namespace Absolute\SilexApi\Factory;
 
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 use Absolute\SilexApi\Response\JsonResponse;
 use Absolute\SilexApi\Response\JsonApiResponse;
 use Absolute\SilexApi\Response\ResponseInterface;
@@ -20,12 +21,13 @@ class ResponseFactory
     private static $cache = [];
 
     /**
-     * @param HttpRequest $request
+     * @param HttpRequest $httpRequest
+     * @param HttpResponse $httpResponse
      * @return ResponseInterface
      */
-    public static function get(HttpRequest $request)
+    public static function get(HttpRequest $httpRequest, HttpResponse $httpResponse)
     {
-        $accept = $request->headers->get('accept');
+        $accept = $httpRequest->headers->get('accept');
         if (!in_array($accept, self::$allowed)) {
             $accept = self::DEFAULT;
         }
@@ -33,12 +35,12 @@ class ResponseFactory
         if (empty(self::$cache[$accept])) {
             switch ($accept) {
                 case JsonApiResponse::ACCEPT:
-                    self::$cache[$accept] = new JsonApiResponse;
+                    self::$cache[$accept] = new JsonApiResponse($httpResponse);
                     break;
 
                 default:
                 case JsonResponse::ACCEPT:
-                    self::$cache[$accept] = new JsonResponse;
+                    self::$cache[$accept] = new JsonResponse($httpResponse);
                     break;
             }
         }

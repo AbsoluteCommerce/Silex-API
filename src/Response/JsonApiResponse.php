@@ -10,7 +10,7 @@ class JsonApiResponse implements ResponseInterface
     /**
      * @inheritdoc
      */
-    public function prepareResponse(HttpRequest $request, $model)
+    public function prepareResponse(HttpRequest $httpRequest, $model)
     {
         throw new \Exception('Not yet implemented...');
     }

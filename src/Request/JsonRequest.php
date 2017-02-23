@@ -11,7 +11,7 @@ class JsonRequest implements RequestInterface
     /**
      * @inheritdoc
      */
-    public function getQuery(HttpRequest $request, string $field)
+    public function getQuery(HttpRequest $httpRequest, string $field)
     {
         return $field;
     }
@@ -19,9 +19,9 @@ class JsonRequest implements RequestInterface
     /**
      * @inheritdoc
      */
-    public function hydrateModel(HttpRequest $request, ModelInterface $model)
+    public function hydrateModel(HttpRequest $httpRequest, ModelInterface $model)
     {
-        $data = json_decode($request->getContent(), true);
+        $data = json_decode($httpRequest->getContent(), true);
         
         if (!is_array($data)) {
             $data = [];

@@ -75,6 +75,7 @@ EOT;
         $useClasses = [
             'Silex\Application',
             'Symfony\Component\HttpFoundation\Request as HttpRequest',
+            'Symfony\Component\HttpFoundation\Response as HttpResponse',
             'Absolute\SilexApi\SilexApi',
             'Absolute\SilexApi\Request\RequestInterface',
             'Absolute\SilexApi\Response\ResponseInterface',
@@ -85,6 +86,17 @@ EOT;
         ];
         
         $body = '';
+        
+        // append the default HTTP Response
+        $body .= <<<EOT
+// prepare the HTTP Response as 500, the application must prove the request was successful
+\$httpResponse = new HttpResponse(
+    HttpResponse::\$statusTexts[HttpResponse::HTTP_INTERNAL_SERVER_ERROR],
+    HttpResponse::HTTP_INTERNAL_SERVER_ERROR
+);
+EOT;
+        
+        // append the routes
         foreach ($this->config->getResources() as $_resourceId => $_resourceData) {
             $_className = ucfirst($_resourceId);
             if (!empty($_resourceData['namespace'])) {
@@ -95,10 +107,10 @@ EOT;
             
             $body .= <<<EOT
 // {$_resourceData['name']} :: {$_resourceData['description']}
-\$app->{$_resourceData['method']}('{$_resourceData['path']}', function (HttpRequest \$httpRequest{$_paramString}) use (\$app)
+\$app->{$_resourceData['method']}('{$_resourceData['path']}', function (HttpRequest \$httpRequest{$_paramString}) use (\$app, \$httpResponse)
 {
     /** @var Resource\\{$_className} \$resource */
-    \$resource = \$app[SilexApi::DI_RESOURCE_FACTORY]->get(Resource\\{$_className}::class, \$app);
+    \$resource = \$app[SilexApi::DI_RESOURCE_FACTORY]->get(Resource\\{$_className}::class, \$app, \$httpResponse);
     if (!\$resource instanceof ResourceInterface\\{$_className}Interface) {
         throw new NotImplementedException;
     }
@@ -120,7 +132,7 @@ EOT;
             $body .= <<<EOT
 
     /** @var ResponseInterface \$response */
-    \$response = \$app[SilexApi::DI_RESPONSE_FACTORY]->get(\$httpRequest);
+    \$response = \$app[SilexApi::DI_RESPONSE_FACTORY]->get(\$httpRequest, \$httpResponse);
     return \$response->prepareResponse(\$httpRequest, \$resource->execute());
 });
 

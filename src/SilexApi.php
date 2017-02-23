@@ -2,8 +2,8 @@
 namespace Absolute\SilexApi;
 
 use Silex\Application;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request as HttpRequest;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 use Absolute\SilexApi\Generation\Route\RouteRegistrar;
 use Absolute\SilexApi\Factory\ModelFactory;
 use Absolute\SilexApi\Factory\RequestFactory;
@@ -29,18 +29,18 @@ class SilexApi
 
         // handle HTTP Basic Auth
         if ($credentials = $config->getBasicAuthCredentials()) {
-            $app->before(function(Request $request) use ($credentials) {
-                $username = $request->headers->get('php_auth_user');
-                $password = $request->headers->get('php_auth_pw');
+            $app->before(function(HttpRequest $httpRequest) use ($credentials) {
+                $username = $httpRequest->headers->get('php_auth_user');
+                $password = $httpRequest->headers->get('php_auth_pw');
 
                 if (!$username
                     || !$password
                     || !isset($credentials[$username])
                     || $password != $credentials[$username]
                 ) {
-                    return new Response(
-                        Response::$statusTexts[Response::HTTP_UNAUTHORIZED],
-                        Response::HTTP_UNAUTHORIZED
+                    return new HttpResponse(
+                        HttpResponse::$statusTexts[HttpResponse::HTTP_UNAUTHORIZED],
+                        HttpResponse::HTTP_UNAUTHORIZED
                     );
                 }
                 
@@ -49,14 +49,14 @@ class SilexApi
         }
 
         // return 500 by default, to be proven otherwise in the application
-        http_response_code(Response::HTTP_INTERNAL_SERVER_ERROR);
+        http_response_code(HttpResponse::HTTP_INTERNAL_SERVER_ERROR);
         $app->error(function (\Exception $e) use ($app) {
             $message = $app['debug']
                 ? (string)$e
-                : Response::$statusTexts[Response::HTTP_INTERNAL_SERVER_ERROR];
-            return new Response(
+                : HttpResponse::$statusTexts[HttpResponse::HTTP_INTERNAL_SERVER_ERROR];
+            return new HttpResponse(
                 $message,
-                Response::HTTP_INTERNAL_SERVER_ERROR
+                HttpResponse::HTTP_INTERNAL_SERVER_ERROR
             );
         });
 

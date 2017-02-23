@@ -20,12 +20,12 @@ class RequestFactory
     private static $cache = [];
     
     /**
-     * @param HttpRequest $request
+     * @param HttpRequest $httpRequest
      * @return RequestInterface
      */
-    public static function get(HttpRequest $request)
+    public static function get(HttpRequest $httpRequest)
     {
-        $contentType = $request->headers->get('content-type');
+        $contentType = $httpRequest->headers->get('content-type');
         if (!in_array($contentType, self::$allowed)) {
             $contentType = self::DEFAULT;
         }

@@ -2,15 +2,27 @@
 namespace Absolute\SilexApi\Response;
 
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class JsonResponse implements ResponseInterface
 {
     const ACCEPT = 'application/json';
+    
+    /** @var HttpResponse */
+    private $httpResponse;
+
+    /**
+     * @param HttpResponse $httpResponse
+     */
+    public function __construct(HttpResponse $httpResponse)
+    {
+        $this->httpResponse = $httpResponse;
+    }
 
     /**
      * @inheritdoc
      */
-    public function prepareResponse(HttpRequest $request, $model)
+    public function prepareResponse(HttpRequest $httpRequest, $model)
     {
         if ($model === null) {
             return '';
@@ -25,6 +37,8 @@ class JsonResponse implements ResponseInterface
 
         $responseData = json_encode($responseData, JSON_PRETTY_PRINT);
         
-        return $responseData;
+        $this->httpResponse->setContent($responseData);
+        
+        return $this->httpResponse;
     }
 }

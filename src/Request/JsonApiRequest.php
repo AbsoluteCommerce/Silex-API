@@ -11,7 +11,7 @@ class JsonApiRequest implements RequestInterface
     /**
      * @inheritdoc
      */
-    public function getQuery(HttpRequest $request, string $field)
+    public function getQuery(HttpRequest $httpRequest, string $field)
     {
         throw new \Exception('Not yet implemented...');
     }
@@ -19,7 +19,7 @@ class JsonApiRequest implements RequestInterface
     /**
      * @inheritdoc
      */
-    public function hydrateModel(HttpRequest $request, ModelInterface $model)
+    public function hydrateModel(HttpRequest $httpRequest, ModelInterface $model)
     {
         throw new \Exception('Not yet implemented...');
     }

@@ -4,6 +4,7 @@ namespace Absolute\SilexApi;
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Absolute\SilexApi\Generation\Route\RouteRegistrar;
 use Absolute\SilexApi\Factory\ModelFactory;
 use Absolute\SilexApi\Factory\RequestFactory;
@@ -51,12 +52,21 @@ class SilexApi
         // return 500 by default, to be proven otherwise in the application
         http_response_code(HttpResponse::HTTP_INTERNAL_SERVER_ERROR);
         $app->error(function (\Exception $e) use ($app) {
-            $message = $app['debug']
-                ? (string)$e
-                : HttpResponse::$statusTexts[HttpResponse::HTTP_INTERNAL_SERVER_ERROR];
+            if (($e instanceof HttpException)) {
+                $statusCode = $e->getStatusCode();
+                $message = $app['debug']
+                    ? (string)$e
+                    : $e->getMessage();
+            } else {
+                $statusCode = HttpResponse::HTTP_INTERNAL_SERVER_ERROR;
+                $message = $app['debug']
+                    ? (string)$e
+                    : HttpResponse::$statusTexts[$statusCode];
+            }
+            
             return new HttpResponse(
                 $message,
-                HttpResponse::HTTP_INTERNAL_SERVER_ERROR
+                $statusCode
             );
         });
 

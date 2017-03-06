@@ -8,6 +8,7 @@ use Zend\Code\Generator\FileGenerator;
 use Zend\Code\Generator\ClassGenerator;
 use Zend\Code\Generator\MethodGenerator;
 use Zend\Code\Generator\ParameterGenerator;
+use Zend\Code\Generator\PropertyGenerator;
 use Zend\Code\Generator\DocBlockGenerator;
 use Zend\Code\Generator\DocBlock\Tag\ParamTag;
 use Zend\Code\Generator\DocBlock\Tag\ReturnTag;
@@ -33,6 +34,19 @@ class SwaggerGenerator extends GeneratorAbstract
         $class->setNamespaceName('Absolute\\SilexApi\\Generation\\Docs');
         $class->setName('Swagger');
         
+        // add replace property
+        $_propertyGenerator = new PropertyGenerator;
+        $_propertyGenerator
+            ->setName('replace')
+            ->setDefaultValue([
+                '\/' => '/',
+            ])
+            ->setDocBlock(new DocBlockGenerator(null, null, [
+                new ParamTag('replace', ['array']),
+            ]))
+            ->addFlag(PropertyGenerator::FLAG_PRIVATE);
+        $class->addPropertyFromGenerator($_propertyGenerator);
+        
         // generate parse() method
         $docBlock = new DocBlockGenerator;
         $docBlock->setTags([
@@ -47,6 +61,11 @@ class SwaggerGenerator extends GeneratorAbstract
     . DIRECTORY_SEPARATOR . '..'
     . DIRECTORY_SEPARATOR . 'data'
     . DIRECTORY_SEPARATOR;
+
+\$replace = array_merge(
+    \$this->replace,
+    \$replace
+);
 
 \$swaggerJson = file_get_contents(\$dataPath . 'swagger.json');
 \$swaggerJson = str_replace(

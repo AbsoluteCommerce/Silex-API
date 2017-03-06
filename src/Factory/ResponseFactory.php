@@ -25,8 +25,10 @@ class ResponseFactory
      * @param HttpResponse $httpResponse
      * @return ResponseInterface
      */
-    public static function get(HttpRequest $httpRequest, HttpResponse $httpResponse)
-    {
+    public static function get(
+        HttpRequest $httpRequest,
+        HttpResponse $httpResponse
+    ) {
         $accept = $httpRequest->headers->get('accept');
         if (!in_array($accept, self::$allowed)) {
             $accept = self::DEFAULT;

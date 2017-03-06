@@ -11,8 +11,11 @@ class ResourceFactory
      * @param Application $app
      * @param HttpResponse $httpResponse
      */
-    public static function get($className, Application $app, HttpResponse $httpResponse)
-    {
+    public static function get(
+        $className,
+        Application $app,
+        HttpResponse $httpResponse
+    ) {
         return new $className($app, $httpResponse);
     }
 }

@@ -1,7 +1,8 @@
 {
     "name": "absolute/silex-api",
-    "description": "Auto-generated API functionality with Silex PHP Framework from Absolute Commerce",
+    "description": "Auto-generated API functionality with Silex PHP Framework from Absolute Commerce Ltd.",
     "type": "project",
+    "version": "0.1.0",
     "require": {
         "silex/silex": "^2.0.4",
         "symfony/console": "^3.2.3",

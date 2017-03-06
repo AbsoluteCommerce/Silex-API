@@ -105,7 +105,7 @@ EOT;
                 $_className = ucfirst($_resourceData['namespace']) . '\\' . $_className;
             }
             
-            $_paramString = $this->_buildParamString($_resourceData['params'] ?? []); #todo remove this for < PHP7 support
+            $_paramString = $this->_buildParamString(isset($_resourceData['params']) ? $_resourceData['params'] : []);
             
             $body .= <<<EOT
 // {$_resourceData['name']} :: {$_resourceData['description']}
@@ -119,15 +119,15 @@ EOT;
     
 EOT;
 
-            if ($_resourceParams = $this->_buildResourceParams($_resourceData['params'] ?? [])) { #todo remove this for < PHP7 support
+            if ($_resourceParams = $this->_buildResourceParams(isset($_resourceData['params']) ? $_resourceData['params'] : [])) {
                 $body .= PHP_EOL . $_resourceParams . PHP_EOL;
             }
             
-            if ($_resourceQueries = $this->_buildResourceQueries($_resourceData['queries'] ?? [])) { #todo remove this for < PHP7 support
+            if ($_resourceQueries = $this->_buildResourceQueries(isset($_resourceData['queries']) ? $_resourceData['queries'] : [])) {
                 $body .= PHP_EOL . $_resourceQueries . PHP_EOL;
             }
             
-            if ($_resourceBody = $this->_buildResourceBody($_resourceData['body'] ?? null)) { #todo remove this for < PHP7 support
+            if ($_resourceBody = $this->_buildResourceBody(isset($_resourceData['body']) ? $_resourceData['body'] : null)) {
                 $body .= PHP_EOL . $_resourceBody . PHP_EOL;
             }
 

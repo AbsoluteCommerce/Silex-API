@@ -135,7 +135,8 @@ EOT;
         $tags = [];
         foreach ($this->config->getResources() as $_resourceId => $_resourceData) {
             $_parameters = [];
-            foreach ($_resourceData['params'] ?? [] as $_paramId => $_paramData) { #todo remove this for < PHP7 support
+            $_resourceDataParams = isset($_resourceData['params']) ? $_resourceData['params'] : [];
+            foreach ($_resourceDataParams as $_paramId => $_paramData) {
                 $_parameters[] = [
                     'name' => $_paramId,
                     'in' => 'path',
@@ -144,7 +145,8 @@ EOT;
                     'type' => $_paramData['type'],
                 ];
             }
-            foreach ($_resourceData['queries'] ?? [] as $_paramId => $_paramData) { #todo remove this for < PHP7 support
+            $_resourceDataQueries = isset($_resourceData['queries']) ? $_resourceData['queries'] : [];
+            foreach ($_resourceDataQueries as $_paramId => $_paramData) {
                 $_parameters[] = [
                     'name' => $_paramId,
                     'in' => 'query',
@@ -153,8 +155,8 @@ EOT;
                     'type' => $_paramData['type'],
                 ];
             }
-            $_body = $_resourceData['body'];
-            if ($_body ?? false) { #todo remove this for < PHP7 support
+            $_body = isset($_resourceData['body']) ? $_resourceData['body'] : null;
+            if ($_body !== null) {
                 $_parameters[] = [
                     'name' => 'body',
                     'in' => 'body',

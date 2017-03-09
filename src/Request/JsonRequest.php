@@ -13,7 +13,7 @@ class JsonRequest implements RequestInterface
      */
     public function getQuery(HttpRequest $httpRequest, string $field)
     {
-        return $field;
+        return $httpRequest->get($field);
     }
 
     /**

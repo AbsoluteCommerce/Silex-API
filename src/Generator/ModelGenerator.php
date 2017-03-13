@@ -76,6 +76,12 @@ class ModelGenerator extends GeneratorAbstract
                     ->addFlag(PropertyGenerator::FLAG_PRIVATE);
                 $class->addPropertyFromGenerator($_propertyGenerator);
                 
+                // setter
+                $_methodBody = <<<EOT
+\$this->{$_propertyId} = \${$_propertyId};
+
+return \$this;
+EOT;
                 $class->addMethod(
                     'set' . ucfirst($_propertyId),
                     [
@@ -83,11 +89,14 @@ class ModelGenerator extends GeneratorAbstract
                         # new ParameterGenerator($_propertyId, $_propertyData['type']),
                     ],
                     MethodGenerator::FLAG_PUBLIC,
-                    "\$this->{$_propertyId} = \${$_propertyId};",
+                    $_methodBody,
                     new DocBlockGenerator(null, null, [
                         new ParamTag($_propertyId, [$_propertyData['type']]),
+                        new ReturnTag([$class->getName()]),
                     ])
                 );
+                
+                // getter
                 $class->addMethod(
                     'get' . ucfirst($_propertyId),
                     [],

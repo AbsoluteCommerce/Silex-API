@@ -34,19 +34,6 @@ class SwaggerGenerator extends GeneratorAbstract
         $class->setNamespaceName('Absolute\\SilexApi\\Generation\\Docs');
         $class->setName('Swagger');
         
-        // add replace property
-        $_propertyGenerator = new PropertyGenerator;
-        $_propertyGenerator
-            ->setName('replace')
-            ->setDefaultValue([
-                '\/' => '/',
-            ])
-            ->setDocBlock(new DocBlockGenerator(null, null, [
-                new ParamTag('replace', ['array']),
-            ]))
-            ->addFlag(PropertyGenerator::FLAG_PRIVATE);
-        $class->addPropertyFromGenerator($_propertyGenerator);
-        
         // generate parse() method
         $docBlock = new DocBlockGenerator;
         $docBlock->setTags([
@@ -61,11 +48,6 @@ class SwaggerGenerator extends GeneratorAbstract
     . DIRECTORY_SEPARATOR . '..'
     . DIRECTORY_SEPARATOR . 'data'
     . DIRECTORY_SEPARATOR;
-
-\$replace = array_merge(
-    \$this->replace,
-    \$replace
-);
 
 \$swaggerJson = file_get_contents(\$dataPath . 'swagger.json');
 \$swaggerJson = str_replace(
@@ -237,12 +219,16 @@ EOT;
                 ],
             ];
         }
+        
+        // prepare the Swagger JSON
+        $swaggerJson = json_encode($swagger, JSON_PRETTY_PRINT);
+        $swaggerJson = str_replace('\/', '/', $swaggerJson);
 
         // write the file
         $file = new FileGenerator;
         $generationDir = $this->config->getGenerationDir('data');
         $file->setFilename($generationDir . 'swagger.json');
-        $file->setSourceContent(json_encode($swagger, JSON_PRETTY_PRINT));
+        $file->setSourceContent($swaggerJson);
         $file->setSourceDirty(false);
         $file->write();
     }

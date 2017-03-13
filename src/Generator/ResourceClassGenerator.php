@@ -71,7 +71,8 @@ class ResourceClassGenerator extends GeneratorAbstract
                 $class->addMethod(
                     'set' . ucfirst($_paramId),
                     [
-                        new ParameterGenerator($_paramId, $_paramData['type']), #todo configurable PHP7 scalar type hint
+                        new ParameterGenerator($_paramId), #todo configurable PHP7 scalar type hint
+                        # new ParameterGenerator($_paramId, $_paramData['type']),
                     ],
                     MethodGenerator::FLAG_PUBLIC,
                     "\$this->{$_paramId} = \${$_paramId};",
@@ -96,7 +97,8 @@ class ResourceClassGenerator extends GeneratorAbstract
                 $class->addMethod(
                     'set' . ucfirst($_queryId),
                     [
-                        new ParameterGenerator($_queryId, $_queryData['type']), #todo configurable PHP7 scalar type hint
+                        new ParameterGenerator($_queryId), #todo configurable PHP7 scalar type hint
+                        # new ParameterGenerator($_queryId, $_queryData['type']),
                     ],
                     MethodGenerator::FLAG_PUBLIC,
                     "\$this->{$_queryId} = \${$_queryId};",

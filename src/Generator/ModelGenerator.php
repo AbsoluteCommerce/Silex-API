@@ -79,7 +79,8 @@ class ModelGenerator extends GeneratorAbstract
                 $class->addMethod(
                     'set' . ucfirst($_propertyId),
                     [
-                        new ParameterGenerator($_propertyId, $_propertyData['type']), #todo configurable PHP7 scalar type hint
+                        new ParameterGenerator($_propertyId), #todo configurable PHP7 scalar type hint
+                        # new ParameterGenerator($_propertyId, $_propertyData['type']),
                     ],
                     MethodGenerator::FLAG_PUBLIC,
                     "\$this->{$_propertyId} = \${$_propertyId};",

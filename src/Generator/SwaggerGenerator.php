@@ -205,11 +205,25 @@ EOT;
                 'properties' => [],
             ];
             foreach ($_modelData['properties'] as $_field => $_fieldData) {
-                $swagger['definitions']['_single_' . $_modelType]['properties'][$_field] = [
-                    'type' => $_fieldData['type'],
-                    'format' => $this->_mapFormat($_fieldData['type']),
-                    'example' => $_fieldData['example'],
-                ];
+                switch ($_fieldData['type']) {
+                    case 'array':
+                        $swagger['definitions']['_single_' . $_modelType]['properties'][$_field] = [
+                            'type' => $_fieldData['type'],
+                            'items' => [
+                                'type' => 'string',
+                            ],
+                            'example' => $_fieldData['example'],
+                        ];
+                        break;
+                    
+                    default:
+                        $swagger['definitions']['_single_' . $_modelType]['properties'][$_field] = [
+                            'type' => $_fieldData['type'],
+                            'format' => $this->_mapFormat($_fieldData['type']),
+                            'example' => $_fieldData['example'],
+                        ];
+                        break;
+                }
             }
 
             $swagger['definitions']['_multiple_' . $_modelType] = [

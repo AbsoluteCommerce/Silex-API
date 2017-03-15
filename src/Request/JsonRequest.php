@@ -2,6 +2,7 @@
 namespace Absolute\SilexApi\Request;
 
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Absolute\SilexApi\Model\ModelInterface;
 
 class JsonRequest implements RequestInterface
@@ -59,6 +60,10 @@ class JsonRequest implements RequestInterface
     public function hydrateModel(HttpRequest $httpRequest, ModelInterface $model)
     {
         $data = json_decode($httpRequest->getContent(), true);
+        
+        if ($data === null) {
+            throw new BadRequestHttpException('Invalid JSON in request body');
+        }
         
         if (!is_array($data)) {
             $data = [];

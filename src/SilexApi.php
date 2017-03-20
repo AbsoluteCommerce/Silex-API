@@ -66,7 +66,6 @@ class SilexApi
                 $statusCode = $e->getStatusCode();
                 $message = $e->getMessage();
             } catch (\Exception $e) {
-                #todo log this unknown exception, if logger available
                 $statusCode = HttpResponse::HTTP_INTERNAL_SERVER_ERROR;
                 $message = HttpResponse::$statusTexts[$statusCode];
             }

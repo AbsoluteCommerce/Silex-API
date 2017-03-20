@@ -5,6 +5,8 @@ use Silex\Application;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Absolute\SilexApi\Generation\Route\RouteRegistrar;
 use Absolute\SilexApi\Factory\ModelFactory;
 use Absolute\SilexApi\Factory\RequestFactory;
@@ -52,22 +54,28 @@ class SilexApi
         // return 500 by default, to be proven otherwise in the application
         http_response_code(HttpResponse::HTTP_INTERNAL_SERVER_ERROR);
         $app->error(function (\Exception $e) use ($app) {
-            if (($e instanceof HttpException)) {
+            try {
+                throw $e;
+            } catch (MethodNotAllowedException $e) {
+                $statusCode = HttpResponse::HTTP_METHOD_NOT_ALLOWED;
+                $message = $e->getMessage();
+            } catch (ResourceNotFoundException $e) {
+                $statusCode = HttpResponse::HTTP_NOT_FOUND;
+                $message = $e->getMessage();
+            } catch (HttpException $e) {
                 $statusCode = $e->getStatusCode();
-                $message = $app['debug']
-                    ? (string)$e
-                    : $e->getMessage();
-            } else {
+                $message = $e->getMessage();
+            } catch (\Exception $e) {
+                #todo log this unknown exception, if logger available
                 $statusCode = HttpResponse::HTTP_INTERNAL_SERVER_ERROR;
-                $message = $app['debug']
-                    ? (string)$e
-                    : HttpResponse::$statusTexts[$statusCode];
+                $message = HttpResponse::$statusTexts[$statusCode];
             }
             
-            return new HttpResponse(
-                $message,
-                $statusCode
-            );
+            if ($app['debug'] == true) {
+                $message = (string)$e;
+            }
+            
+            return new HttpResponse($message, $statusCode);
         });
 
         // include auto-generated routes for the client

@@ -22,7 +22,7 @@ class Config
         self::DEBUG     => false,
         self::SCHEME    => 'http',
         self::HOSTNAME  => 'localhost',
-        self::BASE_PATH => '',
+        self::BASE_PATH => '/',
     ];
 
     /**

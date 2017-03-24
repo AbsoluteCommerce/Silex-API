@@ -90,10 +90,6 @@ EOT;
                 'contact' => [
                     'email' => $this->config->getApiEmail(),
                 ],
-                'license' => [
-                    'name' => $this->config->getApiLicenseName(),
-                    'url'  => $this->config->getApiLicenseUrl(),
-                ],
             ],
             'host' => '{HOSTNAME}',
             'basePath' => '{BASEPATH}',
@@ -113,6 +109,14 @@ EOT;
                 'url'         => '',
             ],
         ];
+
+        // add license information, if available
+        if ($licenseName = $this->config->getApiLicenseName()) {
+            $swagger['info']['name'] = $licenseName;
+        }
+        if ($licenseUrl = $this->config->getApiLicenseUrl()) {
+            $swagger['info']['url'] = $licenseUrl;
+        }
         
         // add paths
         $tags = [];
@@ -164,19 +168,13 @@ EOT;
                     'application/json'
                 ],
                 'parameters' => $_parameters,
-            ];
-
-            // append the response data
-            if ($_resourceData['response'] === null) {
-                $_response = null;
-            } else {
-                $_response = [
-                    '$ref' => '#/definitions/' . $_resourceId . 'Response',
-                ];
-            }
-            $swagger['paths'][$_resourceData['path']][$_resourceData['method']]['responses'] = [
-                'default' => [
-                    'schema' => $_response,
+                'responses' => [
+                    'default' => [
+                        'description' => '',
+                        'schema' => [
+                            '$ref' => '#/definitions/' . $_resourceId . 'Response',
+                        ],
+                    ],
                 ],
             ];
             
@@ -287,7 +285,11 @@ EOT;
                         'properties' => $_responseProperties,
                     ],
                 ];
-            } else {
+            } elseif (empty($_responseProperties)) {
+                $swagger['definitions'][$_resourceId . 'Response'] = [
+                    'type' => 'string'
+                ];
+            } else { 
                 $swagger['definitions'][$_resourceId . 'Response'] = [
                     'type' => 'object',
                     'properties' => $_responseProperties,

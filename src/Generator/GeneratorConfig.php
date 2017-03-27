@@ -5,6 +5,8 @@ use Absolute\SilexApi\Exception\GenerationException;
 
 class GeneratorConfig
 {
+    const PHP7_HINTS = 'php7_hints';
+    
     const API_VERSION      = 'api_version';
     const API_NAME         = 'api_name';
     const API_DESCRIPTION  = 'api_description';
@@ -46,6 +48,16 @@ class GeneratorConfig
         $this->getNamespace(self::NAMESPACE_RESOURCE);
         $this->getGenerationDir();
         $this->getResourceDir();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPhp7Hints()
+    {
+        $isHints = (bool)$this->data[self::PHP7_HINTS];
+        
+        return $isHints;
     }
 
     /**

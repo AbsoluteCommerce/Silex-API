@@ -85,8 +85,7 @@ EOT;
                 $class->addMethod(
                     'set' . ucfirst($_propertyId),
                     [
-                        new ParameterGenerator($_propertyId), #todo configurable PHP7 scalar type hint
-                        # new ParameterGenerator($_propertyId, $_propertyData['type']),
+                        new ParameterGenerator($_propertyId, $this->config->isPhp7Hints() ? $_propertyData['type'] : null),
                     ],
                     MethodGenerator::FLAG_PUBLIC,
                     $_methodBody,
@@ -95,6 +94,9 @@ EOT;
                         new ReturnTag([$class->getName()]),
                     ])
                 );
+                if ($this->config->isPhp7Hints()) {
+                    $class->getMethod('set' . ucfirst($_propertyId))->setReturnType($class->getNamespaceName() . '\\' . $class->getName());
+                }
                 
                 // getter
                 $class->addMethod(
@@ -106,6 +108,9 @@ EOT;
                         new ReturnTag([$_propertyData['type']]),
                     ])
                 );
+                if ($this->config->isPhp7Hints()) {
+                    $class->getMethod('get' . ucfirst($_propertyId))->setReturnType($_propertyData['type']);
+                }
             }
 
             // write the file

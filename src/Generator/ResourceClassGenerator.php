@@ -71,8 +71,7 @@ class ResourceClassGenerator extends GeneratorAbstract
                 $class->addMethod(
                     'set' . ucfirst($_paramId),
                     [
-                        new ParameterGenerator($_paramId), #todo configurable PHP7 scalar type hint
-                        # new ParameterGenerator($_paramId, $_paramData['type']),
+                        new ParameterGenerator($_paramId, $this->config->isPhp7Hints() ? $_paramData['type'] : null),
                     ],
                     MethodGenerator::FLAG_PUBLIC,
                     "\$this->{$_paramId} = \${$_paramId};",
@@ -97,8 +96,7 @@ class ResourceClassGenerator extends GeneratorAbstract
                 $class->addMethod(
                     'set' . ucfirst($_queryId),
                     [
-                        new ParameterGenerator($_queryId), #todo configurable PHP7 scalar type hint
-                        # new ParameterGenerator($_queryId, $_queryData['type']),
+                        new ParameterGenerator($_queryId, $this->config->isPhp7Hints() ? $_queryData['type'] : null),
                     ],
                     MethodGenerator::FLAG_PUBLIC,
                     "\$this->{$_queryId} = \${$_queryId};",
@@ -144,6 +142,9 @@ class ResourceClassGenerator extends GeneratorAbstract
                     "return null;",
                     '@inheritdoc'
                 );
+                if ($this->config->isPhp7Hints()) {
+                    $class->getMethod('execute')->setReturnType(null);
+                }
             } else {
                 $_responseModel = ucfirst($_resourceData['response']);
                 $_hasArray = strpos($_responseModel, '[]');
@@ -161,7 +162,13 @@ class ResourceClassGenerator extends GeneratorAbstract
                     $_body,
                     '@inheritdoc'
                 );
-                #todo configurable PHP7 return type hint
+                if ($this->config->isPhp7Hints()) {
+                    if ($_hasArray) {
+                        $class->getMethod('execute')->setReturnType('array');
+                    } else {
+                        $class->getMethod('execute')->setReturnType("Absolute\\SilexApi\\Generation\\Model\\{$_responseModel}");
+                    }
+                }
             }
 
             // write the file

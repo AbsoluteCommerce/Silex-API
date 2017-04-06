@@ -135,7 +135,7 @@ EOT;
             $_resourceDataQueries = isset($_resourceData['queries']) ? $_resourceData['queries'] : [];
             foreach ($_resourceDataQueries as $_paramId => $_paramData) {
                 $_parameters[] = [
-                    'name' => $_paramId,
+                    'name' => $_paramData['field'],
                     'in' => 'query',
                     'description' => $_paramData['description'],
                     'required' => $_paramData['required'],

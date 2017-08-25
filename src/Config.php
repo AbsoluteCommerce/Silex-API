@@ -6,7 +6,7 @@ class Config
     const DEBUG           = 'debug';
     const SCHEME          = 'scheme';
     const HOSTNAME        = 'hostname';
-    const BASE_PATH       = 'base_path';
+    const BASE_PATH       = 'base_path'; #todo crossover here with \Absolute\SilexApi\Generator\GeneratorConfig::API_PATH - or perhaps this one does not belong?
     const AUTH_HTTP_BASIC = 'auth_http_basic';
 
     /** @var array */
@@ -89,6 +89,7 @@ class Config
     public function getBasePath()
     {
         $basePath = $this->getConfig(self::BASE_PATH);
+        $basePath = '/' . trim($basePath, '/');
         
         return $basePath;
     }

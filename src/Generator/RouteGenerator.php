@@ -99,6 +99,7 @@ EOT;
 EOT;
         
         // append the routes
+        $_pathPrefix = $this->config->getApiPath();
         foreach ($this->config->getResources() as $_resourceId => $_resourceData) {
             $_className = ucfirst($_resourceId);
             if (!empty($_resourceData['namespace'])) {
@@ -109,7 +110,7 @@ EOT;
             
             $body .= <<<EOT
 // {$_resourceData['name']} :: {$_resourceData['description']}
-\$app->{$_resourceData['method']}('{$_resourceData['path']}', function (HttpRequest \$httpRequest{$_paramString}) use (\$app, \$httpResponse)
+\$app->{$_resourceData['method']}('{$_pathPrefix}{$_resourceData['path']}', function (HttpRequest \$httpRequest{$_paramString}) use (\$app, \$httpResponse)
 {
     /** @var Resource\\{$_className} \$resource */
     \$resource = \$app[SilexApi::DI_RESOURCE_FACTORY]->get(Resource\\{$_className}::class, \$app, \$httpResponse);

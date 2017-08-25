@@ -13,6 +13,7 @@ class GeneratorConfig
     const API_EMAIL        = 'api_email';
     const API_LICENSE_NAME = 'api_license_name';
     const API_LICENSE_URL  = 'api_license_url';
+    const API_PATH         = 'api_path';
     
     const NAMESPACE_RESOURCE = 'namespace_resource';
     const GENERATION_DIR     = 'generation_dir';
@@ -118,6 +119,17 @@ class GeneratorConfig
         $apiLicenseUrl = $this->data[self::API_LICENSE_URL];
         
         return $apiLicenseUrl;
+    }
+
+    /**
+     * @return string
+     */
+    public function getApiPath()
+    {
+        $apiPath = $this->data[self::API_PATH];
+        $apiPath = '/' . trim($apiPath, '/');
+        
+        return $apiPath;
     }
     
     /**
